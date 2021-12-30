@@ -84,21 +84,43 @@ const categorylogs = async (req, res) => {
 };
 
 const toggleActiveStatus = async (req, res) => {
-    console.log("req.params.id", req.params.id);
-    try {
-      const category = await Category.findById(req.params.id);
-      console.log("category", category);
-      category.status = category.status == true ? false : true;
-      await category.save();
-      await res.status(201).json({
-        message: category.status ? "Category Activated" : "Category Inactivated"
-      });
-    } catch (err) {
-      console.log("error", error);
-      res.status(500).json({
-        message: err.toString()
+  console.log("req.params.id", req.params.id);
+  try {
+    const category = await Category.findById(req.params.id);
+    console.log("category", category);
+    category.status = category.status == true ? false : true;
+    await category.save();
+    await res.status(201).json({
+      message: category.status ? "Category Activated" : "Category Inactivated"
+    });
+  } catch (err) {
+    console.log("error", error);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+const allCategories = async (req, res) => {
+  try {
+    const allCategories = await Category.find();
+    if (allCategories) {
+      console.log("allCategories", allCategories);
+      res.status(201).json({
+        allCategories
       });
     }
-  };
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
 
-export { createCategory, categorylogs, updateCategory,toggleActiveStatus };
+export {
+  createCategory,
+  categorylogs,
+  updateCategory,
+  toggleActiveStatus,
+  allCategories
+};

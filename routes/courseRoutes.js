@@ -1,10 +1,21 @@
 import express from "express";
 const router = express.Router();
 
-import { createProduct } from "../controllers/courseController";
+import {
+  createCourse,
+  courselogs,
+  toggleActiveStatus,
+  courseDetails,
+  editCourse,
+  allCourses
+} from "../controllers/courseController";
 import { protect } from "../middlewares/authMiddleware";
 
-router.post("/createProduct",protect, createProduct);
-
+router.post("/createCourse", protect, createCourse);
+router.get("/courselogs", protect, courselogs);
+router.get("/toggle-active/:id", protect, toggleActiveStatus);
+router.get("/courseDetails/:id", protect, courseDetails);
+router.post("/editCourse", protect, editCourse);
+router.get("/allCourses", protect, allCourses);
 
 export default router;

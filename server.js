@@ -10,6 +10,8 @@ import { fileFilter, fileStorage } from "./multer";
 import adminRoutes from "./routes/adminRoutes";
 import userRoutes from "./routes/userRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
+import courseRoutes from "./routes/courseRoutes";
+import lectureRoutes from "./routes/lectureRoutes";
 
 dotenv.config();
 
@@ -36,16 +38,18 @@ app.use(
     {
       name: "doc_schedule",
       maxCount: 1
-    }, {
-      name: "reciepts",
-      maxCount: 12,
     },
-
+    {
+      name: "reciepts",
+      maxCount: 12
+    }
   ])
 );
 app.use("/api/admin", adminRoutes);
 app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
+app.use("/api/course", courseRoutes);
+app.use("/api/lecture", lectureRoutes);
 
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));

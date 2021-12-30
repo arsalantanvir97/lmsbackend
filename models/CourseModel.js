@@ -16,10 +16,11 @@ const CourseSchema = mongoose.Schema(
       type: Boolean
     },
     coursecategory: {
-      type: String
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Category"
     },
     courseduration: {
-      type: Object
+      type: Array
     },
     images: {
       type: Array
