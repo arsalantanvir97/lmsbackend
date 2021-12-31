@@ -69,19 +69,71 @@ const lecturelogs = async (req, res) => {
   }
 };
 const lectureDetails = async (req, res) => {
-    try {
-      console.log("req.params.id", req.params.id);
-      const lecture = await Lecture.findById(req.params.id).populate(
-        "courseid"
-      );
-      await res.status(201).json({
-        lecture
-      });
-    } catch (err) {
-      res.status(500).json({
-        message: err.toString()
+  try {
+    console.log("req.params.id", req.params.id);
+    const lecture = await Lecture.findById(req.params.id).populate("courseid");
+    await res.status(201).json({
+      lecture
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const editLecture = async (req, res) => {
+  const { id, courseid, lecturecode, lecturetitle, videoduration } = req.body;
+  console.log("req.body", req.body);
+  let ad_video =
+    req.files &&
+    req.files.ad_video &&
+    req.files.ad_video[0] &&
+    req.files.ad_video[0].path;
+  console.log("ad_video", ad_video);
+  const lecture = await Lecture.findOne({ _id: id });
+  console.log("lecture", lecture);
+  lecture.courseid = courseid ? JSON.parse(courseid) : lecture.courseid;
+  lecture.lecturecode = lecturecode ? lecturecode : lecture.lecturecode;
+  lecture.lecturetitle = lecturetitle ? lecturetitle : lecture.lecturetitle;
+  lecture.videoduration = videoduration ? videoduration : lecture.videoduration;
+  lecture.ad_video = ad_video ? ad_video : lecture.ad_video;
+  await lecture.save();
+  await res.status(201).json({
+    lecture
+  });
+};
+const deleteLecture = async (req, res) => {
+  try {
+    await Lecture.findByIdAndRemove(req.params.id).populate("courseid");
+    return res.status(201).json({ message: "Lectrue Deleted" });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+const allLectures = async (req, res) => {
+  try {
+    const allLectures = await Lecture.find();
+    if (allLectures) {
+      console.log("allLectures", allLectures);
+      res.status(201).json({
+        allLectures
       });
     }
-  };
-  
-export { createLecture, lecturelogs ,lectureDetails};
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+export {
+  createLecture,
+  lecturelogs,
+  lectureDetails,
+  editLecture,
+  deleteLecture,
+  allLectures
+};

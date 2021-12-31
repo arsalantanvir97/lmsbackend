@@ -12,6 +12,7 @@ import userRoutes from "./routes/userRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import courseRoutes from "./routes/courseRoutes";
 import lectureRoutes from "./routes/lectureRoutes";
+import quizRoutes from "./routes/quizRoutes";
 
 dotenv.config();
 
@@ -50,6 +51,7 @@ app.use("/api/user", userRoutes);
 app.use("/api/category", categoryRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/lecture", lectureRoutes);
+app.use("/api/quiz", quizRoutes);
 
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));
