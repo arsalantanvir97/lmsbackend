@@ -138,11 +138,71 @@ const toggleActiveStatus = async (req, res) => {
       message: user.status ? "User Activated" : "User Inactivated"
     });
   } catch (err) {
-    console.log("error", error);
     res.status(500).json({
       message: err.toString()
     });
   }
 };
 
-export { registerUser, userlogs, getProfile, toggleActiveStatus };
+const newsletterSubscription = async (req, res) => {
+  console.log("req.params.id", req.params.id);
+  try {
+    const user = await User.findById(req.params.id);
+    console.log("user", user);
+    user.subscribed = user.subscribed == true ? false : true;
+    await user.save();
+    await res.status(201).json({
+      message: user.status ? "User Subscribed" : "User unsubscribed"
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const getSubscribedUsers = async (req, res) => {
+  try {
+    const searchParam = req.query.searchString
+      ? // { $text: { $search: req.query.searchString } }
+
+        {
+          $or: [
+          
+            {
+              email: { $regex: `${req.query.searchString}`, $options: "i" }
+            }
+          ]
+        }
+      : {};
+    // const status_filter = req.query.status ? { status: req.query.status } : {};
+    const type_filter = req.query.status ? { subscribed: req.query.status } : {};
+
+   
+
+    const users = await User.paginate(
+      { ...type_filter, ...searchParam,  ...dateFilter },
+      {
+        page: req.query.page,
+        limit: req.query.perPage,
+        lean: true,
+        sort: "-_id"
+      }
+    );
+    await res.status(200).json({
+      users
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+export {
+  registerUser,
+  userlogs,
+  getProfile,
+  toggleActiveStatus,
+  newsletterSubscription,
+  getSubscribedUsers
+};

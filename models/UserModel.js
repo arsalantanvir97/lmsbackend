@@ -20,7 +20,10 @@ const UserSchema = mongoose.Schema(
       type: Boolean,
       default: true
     },
-
+    subscribed: {
+      type: Boolean,
+      default: false
+    },
     userImage: { type: String },
 
     type: { type: String }

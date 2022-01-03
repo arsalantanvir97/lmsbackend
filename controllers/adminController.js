@@ -12,7 +12,7 @@ import {
   createResetToken,
   verifyPassword,
   comparePassword,
-  generateHash,
+  generateHash
 } from "../queries";
 
 const registerAdmin = async (req, res) => {
@@ -22,14 +22,14 @@ const registerAdmin = async (req, res) => {
 
   if (AdminExists) {
     return res.status(401).json({
-      error: "Admin already exist",
+      error: "Admin already exist"
     });
   }
 
   const admin = await Admin.create({
     fullName,
     email,
-    password,
+    password
   });
 
   if (admin) {
@@ -38,11 +38,11 @@ const registerAdmin = async (req, res) => {
       fullName: admin.fullName,
       email: admin.email,
 
-      token: generateToken(admin._id),
+      token: generateToken(admin._id)
     });
   } else {
     return res.status(401).json({
-      error: "false",
+      error: "false"
     });
   }
 };
@@ -60,12 +60,12 @@ const authAdmin = asyncHandler(async (req, res) => {
       email: admin.email,
       userImage: admin.userImage,
 
-      token: generateToken(admin._id),
+      token: generateToken(admin._id)
     });
   } else {
     console.log("error");
     return res.status(201).json({
-      message: "Invalid Email or Password",
+      message: "Invalid Email or Password"
     });
   }
 });
@@ -78,7 +78,7 @@ const recoverPassword = async (req, res) => {
   if (!admin) {
     console.log("!admin");
     return res.status(401).json({
-      message: "Invalid Email or Password",
+      message: "Invalid Email or Password"
     });
   } else {
     const status = generateCode();
@@ -88,10 +88,10 @@ const recoverPassword = async (req, res) => {
           \n\n Your verification status is ${status}:\n\n
           \n\n If you did not request this, please ignore this email and your password will remain unchanged.           
           </p>`;
-    await generateEmail(email, "Advance Home - Password Reset", html);
+    await generateEmail(email, "LMS - Password Reset", html);
     return res.status(201).json({
       message:
-        "Recovery status Has Been Emailed To Your Registered Email Address",
+        "Recovery status Has Been Emailed To Your Registered Email Address"
     });
   }
 };
@@ -131,7 +131,7 @@ const resetPassword = async (req, res) => {
         fullName: updatedadmin.fullName,
         userImage: updatedadmin.userImage,
         email: updatedadmin.email,
-        token: generateToken(updatedadmin._id),
+        token: generateToken(updatedadmin._id)
       });
     }
   } catch (error) {
@@ -169,7 +169,7 @@ const verifyAndREsetPassword = async (req, res) => {
           fullName: admin.fullName,
           userImage: admin.userImage,
           email: admin.email,
-          token: generateToken(admin._id),
+          token: generateToken(admin._id)
         });
       }
     } else {
@@ -189,7 +189,7 @@ const verifyAndREsetPassword = async (req, res) => {
 };
 
 const editProfile = async (req, res) => {
-  const { fullName,email } = req.body;
+  const { fullName, email } = req.body;
   // console.log("req.body", req.body);
   console.log("req.body.fullName", req.body.fullName);
 
@@ -213,11 +213,9 @@ const editProfile = async (req, res) => {
     fullName: admin.fullName,
     email: admin.email,
     userImage: admin.userImage,
-    token: generateToken(admin._id),
+    token: generateToken(admin._id)
   });
 };
-
-
 
 export {
   registerAdmin,
@@ -226,5 +224,5 @@ export {
   verifyRecoverCode,
   resetPassword,
   verifyAndREsetPassword,
-  editProfile,
+  editProfile
 };

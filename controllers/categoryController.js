@@ -94,7 +94,6 @@ const toggleActiveStatus = async (req, res) => {
       message: category.status ? "Category Activated" : "Category Inactivated"
     });
   } catch (err) {
-    console.log("error", error);
     res.status(500).json({
       message: err.toString()
     });

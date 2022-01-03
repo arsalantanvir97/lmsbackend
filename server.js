@@ -13,6 +13,10 @@ import categoryRoutes from "./routes/categoryRoutes";
 import courseRoutes from "./routes/courseRoutes";
 import lectureRoutes from "./routes/lectureRoutes";
 import quizRoutes from "./routes/quizRoutes";
+import feedbackRoutes from "./routes/feedbackRoutes";
+import newsletterRoutes from "./routes/newsletterRoutes";
+import costsettingRoutes from "./routes/costsettingRoutes";
+import subscriptionSettingRoutes from "./routes/subscriptionSettingRoutes";
 
 dotenv.config();
 
@@ -52,7 +56,10 @@ app.use("/api/category", categoryRoutes);
 app.use("/api/course", courseRoutes);
 app.use("/api/lecture", lectureRoutes);
 app.use("/api/quiz", quizRoutes);
-
+app.use("/api/feedback", feedbackRoutes);
+app.use("/api/newsletter", newsletterRoutes);
+app.use("/api/costsetting", costsettingRoutes);
+app.use("/api/subscriptionsetting", subscriptionSettingRoutes);
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));
 
