@@ -14,6 +14,6 @@ router.post("/createQuiz", protect, createQuiz);
 router.get("/deleteQuiz/:id", protect, deleteQuiz);
 router.get("/quizlogs", protect, quizlogs);
 router.post("/editQuiz", protect, editQuiz);
-router.post("/quizDetails/:id", protect, quizDetails);
+router.get("/quizDetails/:id", protect, quizDetails);
 
 export default router;

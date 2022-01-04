@@ -13,8 +13,8 @@ const createQuiz = async (req, res) => {
   console.log("req.body", req.body);
   try {
     const quiz = new Quiz({
-      courseid: courseid,
-      lectureid: lectureid,
+      courseid: JSON.parse(courseid),
+      lectureid: JSON.parse(lectureid),
       quizinfo,
       passingmarks,
       totalmarks,
@@ -62,7 +62,7 @@ const quizlogs = async (req, res) => {
         }
       };
 
-    const quiz = await quiz.paginate(
+    const quiz = await Quiz.paginate(
       { ...searchParam, ...status_filter, ...dateFilter },
       {
         page: req.query.page,
@@ -99,12 +99,25 @@ const editQuiz = async (req, res) => {
   const quiz = await Quiz.findOne({ _id: id });
   console.log("quiz", quiz);
   quiz.courseid = courseid ? courseid : quiz.courseid;
+  console.log("block1");
   quiz.lectureid = lectureid ? lectureid : quiz.lectureid;
+  console.log("block2");
+
   quiz.quizinfo = quizinfo ? quizinfo : quiz.quizinfo;
+  console.log("block3");
+
   quiz.passingmarks = passingmarks ? passingmarks : quiz.passingmarks;
+  console.log("block4");
+
   quiz.totalmarks = totalmarks ? totalmarks : quiz.totalmarks;
+  console.log("block5");
+
   quiz.quizduration = quizduration ? quizduration : quiz.quizduration;
+  console.log("block6");
+
   quiz.startingdate = startingdate ? startingdate : quiz.startingdate;
+  console.log("block7");
+
   quiz.quizinfo = quizinfo ? quizinfo : quiz.quizinfo;
 
   await quiz.save();
@@ -128,7 +141,9 @@ const deleteQuiz = async (req, res) => {
 const quizDetails = async (req, res) => {
   try {
     console.log("req.params.id", req.params.id);
-    const quiz = await Quiz.findById(req.params.id).populate("userid courseid lectureid");
+    const quiz = await Quiz.findById(req.params.id).populate(
+      "userid courseid lectureid"
+    );
     await res.status(201).json({
       quiz
     });
@@ -138,4 +153,4 @@ const quizDetails = async (req, res) => {
     });
   }
 };
-export { createQuiz, deleteQuiz, quizlogs,editQuiz ,quizDetails};
+export { createQuiz, deleteQuiz, quizlogs, editQuiz, quizDetails };

@@ -16,8 +16,8 @@ const QuizSchema = mongoose.Schema(
       ref: "Lecture"
     },
     status: {
-      type: Boolean,
-      default: true
+      type: String,
+      default: "Pending"
     },
 
     quizinfo: {
