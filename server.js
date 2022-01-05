@@ -17,6 +17,11 @@ import feedbackRoutes from "./routes/feedbackRoutes";
 import newsletterRoutes from "./routes/newsletterRoutes";
 import costsettingRoutes from "./routes/costsettingRoutes";
 import subscriptionSettingRoutes from "./routes/subscriptionSettingRoutes";
+import registeredCoursesRoutes from "./routes/registeredCoursesRoutes";
+import subscriptionpackageRoutes from "./routes/subscriptionpackageRoutes";
+import certificationRoutes from "./routes/certificationRoutes";
+import bookingRoutes from "./routes/bookingRoutes";
+import appointmentRoutes from "./routes/appointmentRoutes";
 
 dotenv.config();
 
@@ -60,6 +65,13 @@ app.use("/api/feedback", feedbackRoutes);
 app.use("/api/newsletter", newsletterRoutes);
 app.use("/api/costsetting", costsettingRoutes);
 app.use("/api/subscriptionsetting", subscriptionSettingRoutes);
+app.use("/api/registeredCourses", registeredCoursesRoutes);
+app.use("/api/subscriptionpackageRoutes", subscriptionpackageRoutes);
+app.use("/api/certification", certificationRoutes);
+app.use("/api/booking", bookingRoutes);
+app.use("/api/appointment", appointmentRoutes);
+
+
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));
 

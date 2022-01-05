@@ -25,7 +25,9 @@ const UserSchema = mongoose.Schema(
       default: false
     },
     userImage: { type: String },
-
+    enterpriseid: {
+      type: String
+    },
     type: { type: String }
   },
   {

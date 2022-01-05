@@ -2,7 +2,7 @@ import User from "../models/UserModel.js";
 import generateToken from "../utills/generateJWTtoken.js";
 import generateEmail from "../services/generate_email.js";
 import CreateNotification from "../utills/notification.js";
-
+import moment from "moment";
 import generateCode from "../services/generate_code.js";
 import {
   createResetToken,
@@ -167,7 +167,6 @@ const getSubscribedUsers = async (req, res) => {
 
         {
           $or: [
-          
             {
               email: { $regex: `${req.query.searchString}`, $options: "i" }
             }
@@ -175,12 +174,22 @@ const getSubscribedUsers = async (req, res) => {
         }
       : {};
     // const status_filter = req.query.status ? { status: req.query.status } : {};
-    const type_filter = req.query.status ? { subscribed: req.query.status } : {};
-
-   
+    const type_filter = req.query.status
+      ? { subscribed: req.query.status }
+      : {};
+    const from = req.query.from;
+    const to = req.query.to;
+    let dateFilter = {};
+    if (from && to)
+      dateFilter = {
+        createdAt: {
+          $gte: moment.utc(new Date(from)).startOf("day"),
+          $lte: moment.utc(new Date(to)).endOf("day")
+        }
+      };
 
     const users = await User.paginate(
-      { ...type_filter, ...searchParam,  ...dateFilter },
+      { ...type_filter, ...searchParam, ...dateFilter },
       {
         page: req.query.page,
         limit: req.query.perPage,
