@@ -4,7 +4,8 @@ import express from "express";
 import dotenv from "dotenv";
 import multer from "multer";
 import logger from "morgan";
-
+import https from "https";
+import fs from "fs";
 import connectDB from "./config/db.js";
 import { fileFilter, fileStorage } from "./multer";
 import adminRoutes from "./routes/adminRoutes";
@@ -25,7 +26,25 @@ import appointmentRoutes from "./routes/appointmentRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 
 dotenv.config();
+const PORT = 5095;
 
+// SSL Configuration
+const local = true;
+let credentials = {};
+
+if (local) {
+  credentials = {
+    key: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.key", "utf8"),
+    cert: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.crt", "utf8"),
+    ca: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.ca"),
+  };
+} else {
+  credentials = {
+    key: fs.readFileSync("../certs/ssl.key"),
+    cert: fs.readFileSync("../certs/ssl.crt"),
+    ca: fs.readFileSync("../certs/ca-bundle"),
+  };
+}
 connectDB();
 const app = express();
 app.use(cors());
@@ -80,4 +99,9 @@ app.get("/", (req, res) => {
   res.send("API is running....");
 });
 
-app.listen(5095, console.log("Server running on port 5095"));
+const httpsServer = https.createServer(credentials, app);
+httpsServer.listen(PORT, () => {
+  console.log(
+    "\u001b[" + 34 + "m" + `Server started on port: ${PORT}` + "\u001b[0m"
+  );
+});
