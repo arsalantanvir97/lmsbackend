@@ -14,7 +14,7 @@ const SubscriptionPackageSchema = mongoose.Schema(
     title: { type: String },
     fee: { type: Number },
     description: { type: String },
-    duration:{type: Number}
+    duration: { type: Number }
   },
   {
     timestamps: true

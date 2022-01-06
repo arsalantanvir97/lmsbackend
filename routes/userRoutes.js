@@ -7,7 +7,8 @@ import {
   getProfile,
   toggleActiveStatus,
   newsletterSubscription,
-  getSubscribedUsers
+  getSubscribedUsers,
+  getLatestUsers
 } from "../controllers/userController.js";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -17,5 +18,6 @@ router.get("/getProfile/:id", protect, getProfile);
 router.get("/toggle-active/:id", protect, toggleActiveStatus);
 router.get("/newsletterSubscription/:id", protect, newsletterSubscription);
 router.get("/getSubscribedUsers", protect, getSubscribedUsers);
+router.get("/getlatestusers", protect,getLatestUsers);
 
 export default router;

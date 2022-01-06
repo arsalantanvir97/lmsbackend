@@ -207,11 +207,25 @@ const getSubscribedUsers = async (req, res) => {
     });
   }
 };
+const getLatestUsers = async (req, res) => {
+  try {
+    const user = await User.find().sort({ $natural: -1 }).limit(5);
+
+    await res.status(201).json({
+      user,
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString(),
+    });
+  }
+};
 export {
   registerUser,
   userlogs,
   getProfile,
   toggleActiveStatus,
   newsletterSubscription,
-  getSubscribedUsers
+  getSubscribedUsers,
+  getLatestUsers
 };

@@ -22,6 +22,7 @@ import subscriptionpackageRoutes from "./routes/subscriptionpackageRoutes";
 import certificationRoutes from "./routes/certificationRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
 import appointmentRoutes from "./routes/appointmentRoutes";
+import notificationRoutes from "./routes/notificationRoutes";
 
 dotenv.config();
 
@@ -70,7 +71,7 @@ app.use("/api/subscriptionpackageRoutes", subscriptionpackageRoutes);
 app.use("/api/certification", certificationRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/appointment", appointmentRoutes);
-
+app.use("/api/notification", notificationRoutes);
 
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));

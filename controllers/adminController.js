@@ -1,6 +1,11 @@
 import asyncHandler from "express-async-handler";
 
 import Admin from "../models/AdminModel.js";
+import User from "../models/UserModel";
+import Course from "../models/CourseModel";
+import Appointement from "../models/AppointementModel";
+import SubscriptionPackage from "../models/SubscriptionPackageModel";
+
 import Reset from "../models/ResetModel.js";
 
 import moment from "moment";
@@ -217,6 +222,81 @@ const editProfile = async (req, res) => {
   });
 };
 
+const getCountofallCollection = async (req, res) => {
+  try {
+    console.log("getCountofallCollection", req);
+    const { year1 } = req.query;
+    const yearuser = req.query.year1 ? req.query.year1 : [];
+
+    console.log("year1", year1);
+    const arr1 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+
+    const start_date1 = moment(yearuser).startOf("year").toDate();
+    const end_date1 = moment(yearuser).endOf("year").toDate();
+
+    const query = [
+      {
+        $match: {
+          createdAt: {
+            $gte: start_date1,
+            $lte: end_date1
+          }
+        }
+      },
+      {
+        $addFields: {
+          date: {
+            $month: "$createdAt"
+          }
+        }
+      },
+      {
+        $group: {
+          _id: "$date",
+          count: { $sum: 1 }
+        }
+      },
+      {
+        $addFields: {
+          month: "$_id"
+        }
+      },
+      {
+        $project: {
+          _id: 0,
+          month: 1,
+          count: 1
+        }
+      }
+    ];
+
+    const [usercount, coursecount, appointmentcount, salesCount] =
+      await Promise.all([
+        User.count(),
+        Course.count(),
+        Appointement.count(),
+        SubscriptionPackage.aggregate(query)
+      ]);
+    console.log("salesCount", salesCount);
+    salesCount.forEach((data) => {
+      if (data) arr1[data.month - 1] = data.count;
+    });
+
+    await res.status(201).json({
+      usercount,
+      coursecount,
+      appointmentcount,
+
+      graph_data: arr1
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
 export {
   registerAdmin,
   authAdmin,
@@ -224,5 +304,6 @@ export {
   verifyRecoverCode,
   resetPassword,
   verifyAndREsetPassword,
-  editProfile
+  editProfile,
+  getCountofallCollection
 };

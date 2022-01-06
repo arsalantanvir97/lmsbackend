@@ -7,7 +7,8 @@ import {
   verifyRecoverCode,
   resetPassword,
   editProfile,
-  verifyAndREsetPassword
+  verifyAndREsetPassword,
+  getCountofallCollection
 } from "../controllers/adminController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -18,6 +19,6 @@ router.post("/adminverifyRecoverCode", verifyRecoverCode);
 router.post("/adminresetPassword", resetPassword);
 router.post("/editProfile", protect, editProfile);
 router.post("/verifyAndREsetPassword", protect, verifyAndREsetPassword);
-
+router.get("/getCountofallCollection", protect, getCountofallCollection);
 
 export default router;
