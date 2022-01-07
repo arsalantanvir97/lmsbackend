@@ -44,4 +44,19 @@ const editCostSetting = async (req, res) => {
     });
   }
 };
-export { createCostSetting, editCostSetting };
+const getCostSetting = async (req, res) => {
+  try {
+    const costSetting = await CostSetting.findOne();
+    if (costSetting) {
+      console.log("costSetting", costSetting);
+      res.status(201).json({
+        costSetting
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+export { createCostSetting, editCostSetting ,getCostSetting};

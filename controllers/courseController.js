@@ -29,7 +29,6 @@ const createCourse = async (req, res) => {
     images: reciepts
   });
   if (course) {
-  
     console.log("course", course);
     res.status(201).json({
       course
@@ -188,24 +187,34 @@ const allCourses = async (req, res) => {
 const groupedCourses = async (req, res) => {
   try {
     const categoryCourses = await Course.aggregate([
-        { $group: {
-           '_id': {coursecategory:"$coursecategory", },
-           "count" : { "$sum": 1 }
-        }},
-        // { $group: {
-        //    '_id': "$_id.id",
-        //    "ListOfName" : {"$push" : {Name:"$_id.Name", Frequency: "$count"}}
-        // }},
-     ],
-  
-     );
-     console.log('categoryCourses',categoryCourses)
-    // if (allCourses) {
-    //   console.log("allCourses", allCourses);
-    //   res.status(201).json({
-    //     allCourses
-    //   });
-    // }
+      {
+        $group: {
+          _id: { coursecategory: "$coursecategory" },
+          groupedata: {
+            $push: {
+              coursetitle: "$coursetitle",
+              coursecategory: "$coursecategory",
+              createdAt: "$createdAt",
+              coursedescription: "$coursedescription",
+              coursetitle: "$coursetitle",
+              coursefeature: "$coursefeature",
+              status: "$status",
+              startingdate: "$startingdate",
+              coursecode: "$coursecode",
+              images: "$images",
+              courseduraion: "$courseduraion"
+            }
+          }
+        }
+      }
+    ]);
+    console.log("categoryCourses", categoryCourses);
+    if (categoryCourses) {
+      console.log("categoryCourses", categoryCourses);
+      res.status(201).json({
+        categoryCourses
+      });
+    }
   } catch (err) {
     res.status(500).json({
       message: err.toString()
@@ -219,6 +228,5 @@ export {
   courseDetails,
   editCourse,
   allCourses,
-  groupedCourses,
-  
+  groupedCourses
 };

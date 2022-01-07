@@ -128,9 +128,7 @@ const editQuiz = async (req, res) => {
 
 const deleteQuiz = async (req, res) => {
   try {
-    await Quiz.findByIdAndRemove(req.params.id).populate(
-      "userid courseid lectureid"
-    );
+    await Quiz.findByIdAndRemove(req.params.id)
     return res.status(201).json({ message: "Quiz Deleted" });
   } catch (err) {
     res.status(500).json({

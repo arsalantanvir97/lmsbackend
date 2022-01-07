@@ -71,7 +71,14 @@ const lecturelogs = async (req, res) => {
 const lectureDetails = async (req, res) => {
   try {
     console.log("req.params.id", req.params.id);
-    const lecture = await Lecture.findById(req.params.id).populate("courseid");
+    const lecture = await Lecture.findById(req.params.id).populate({
+      path:"courseid",
+      populate :{
+        path : "coursecategory"
+      }
+      
+
+    });
     await res.status(201).json({
       lecture
     });
