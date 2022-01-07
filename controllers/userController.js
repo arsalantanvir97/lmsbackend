@@ -1,8 +1,10 @@
 import User from "../models/UserModel.js";
+import Reset from "../models/ResetModel";
 import generateToken from "../utills/generateJWTtoken.js";
 import generateEmail from "../services/generate_email.js";
 import CreateNotification from "../utills/notification.js";
 import moment from "moment";
+import asyncHandler from "express-async-handler";
 import generateCode from "../services/generate_code.js";
 import {
   createResetToken,
@@ -13,6 +15,11 @@ import {
 
 const registerUser = async (req, res) => {
   const { username, confirmpassword, email, password, type } = req.body;
+  let user_image =
+    req.files &&
+    req.files.user_image &&
+    req.files.user_image[0] &&
+    req.files.user_image[0].path;
   console.log("req.body", req.body);
   if (!comparePassword(password, confirmpassword))
     return res.status(401).json({ error: "Password does not match" });
@@ -28,7 +35,8 @@ const registerUser = async (req, res) => {
     username,
     password,
     email,
-    type
+    type,
+    userImage: user_image
   });
   console.log("user", user);
   if (user) {
@@ -48,11 +56,9 @@ const registerUser = async (req, res) => {
     await res.status(201).json({
       _id: user._id,
       username: user.username,
-
       email: user.email,
-
       type: user.type,
-
+      userImage: user.userImage,
       token: generateToken(user._id),
       message: "Successfully created user!"
     });
@@ -62,13 +68,180 @@ const registerUser = async (req, res) => {
     });
   }
 };
+const authUser = asyncHandler(async (req, res) => {
+  console.log("authAdmin");
+  const { email, password, confirmpassword } = req.body;
 
+  if (!comparePassword(password, confirmpassword))
+    return res.status(201).json({ message: "Password does not match" });
+  const user = await User.findOne({ email });
+  if (user && (await user.matchPassword(password))) {
+    await res.status(200).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      type: user.type,
+      userImage: user.userImage,
+      token: generateToken(user._id)
+    });
+  } else {
+    console.log("error");
+    return res.status(201).json({
+      message: "Invalid Email or Password"
+    });
+  }
+});
+const recoverPassword = async (req, res) => {
+  console.log("recoverPassword");
+  const { email } = req.body;
+  console.log("req.body", req.body);
+  const user = await User.findOne({ email });
+  if (!user) {
+    console.log("!user");
+    return res.status(401).json({
+      message: "Invalid Email or Password"
+    });
+  } else {
+    const status = generateCode();
+    await createResetToken(email, status);
+
+    const html = `<p>You are receiving this because you (or someone else) have requested the reset of the password for your account.
+          \n\n Your verification status is ${status}:\n\n
+          \n\n If you did not request this, please ignore this email and your password will remain unchanged.           
+          </p>`;
+    await generateEmail(email, "LMS - Password Reset", html);
+    return res.status(201).json({
+      message:
+        "Recovery status Has Been Emailed To Your Registered Email Address"
+    });
+  }
+};
+const verifyRecoverCode = async (req, res) => {
+  const { code, email } = req.body;
+  console.log("req.body", req.body);
+  const reset = await Reset.findOne({ email, code });
+
+  if (reset)
+    return res.status(200).json({ message: "Recovery status Accepted" });
+  else {
+    return res.status(400).json({ message: "Invalid Code" });
+  }
+  // console.log("reset", reset);
+};
+const resetPassword = async (req, res) => {
+  try {
+    console.log("reset");
+
+    const { password, confirm_password, code, email } = req.body;
+    console.log("req.body", req.body);
+    if (!comparePassword(password, confirm_password))
+      return res.status(400).json({ message: "Password does not match" });
+    const reset = await Reset.findOne({ email, code });
+    console.log("reset", reset);
+    if (!reset)
+      return res.status(400).json({ message: "Invalid Recovery status" });
+    else {
+      console.log("resetexist");
+      const updateduser = await User.findOne({ email });
+      updateduser.password = password;
+      await updateduser.save();
+      console.log("updateduser", updateduser);
+      res.status(201).json({
+        _id: updateduser._id,
+        username: updateduser.username,
+        email: updateduser.email,
+        type: updateduser.type,
+        userImage: updateduser.userImage,
+        token: generateToken(updateduser._id)
+      });
+    }
+  } catch (error) {
+    console.log("error", error);
+    return res.status(400).json({ message: error.toString() });
+  }
+
+  // return updatedadmin
+  // await res.status(201).json({
+  //   message: "Password Updated",
+  // });
+};
+
+const editProfile = async (req, res) => {
+  const { username, email } = req.body;
+  // console.log("req.body", req.body);
+  console.log("req.body.fullName", req.body.fullName);
+
+  let user_image =
+    req.files &&
+    req.files.user_image &&
+    req.files.user_image[0] &&
+    req.files.user_image[0].path;
+  console.log("user_image", user_image);
+  const user = await User.findOne({ email });
+  console.log("user", user);
+  user.username = username;
+  user.userImage = user_image ? user_image : user.userImage;
+  await user.save();
+  // await res.status(201).json({
+  //   message: "Admin Update",
+  //   admin,
+  // });
+  await res.status(201).json({
+    _id: user._id,
+    username: user.username,
+    email: user.email,
+    type: user.type,
+    userImage: user.userImage,
+    token: generateToken(user._id)
+  });
+};
+const verifyAndREsetPassword = async (req, res) => {
+  try {
+    console.log("reset");
+
+    const { existingpassword, newpassword, confirm_password, email } = req.body;
+
+    console.log("req.body", req.body);
+    const user = await User.findOne({ email });
+
+    if (user && (await user.matchPassword(existingpassword))) {
+      console.log("block1");
+      if (!comparePassword(newpassword, confirm_password)) {
+        console.log("block2");
+        return res.status(400).json({ message: "Password does not match" });
+      } else {
+        console.log("block3");
+        user.password = newpassword;
+        await user.save();
+        console.log("user", user);
+        res.status(201).json({
+          _id: user._id,
+    username: user.username,
+    email: user.email,
+    type: user.type,
+    userImage: user.userImage,
+    token: generateToken(user._id)
+        });
+      }
+    } else {
+      console.log("block4");
+
+      return res.status(401).json({ message: "Wrong Password" });
+    }
+  } catch (error) {
+    console.log("error", error);
+    return res.status(400).json({ message: error.toString() });
+  }
+
+  // return updatedadmin
+  // await res.status(201).json({
+  //   message: "Password Updated",
+  // });
+};
 const userlogs = async (req, res) => {
   try {
     const searchParam = req.query.searchString
-      ? // { $text: { $search: req.query.searchString } }
-
-        {
+      ? {
           $or: [
             {
               username: { $regex: `${req.query.searchString}`, $options: "i" }
@@ -163,9 +336,7 @@ const newsletterSubscription = async (req, res) => {
 const getSubscribedUsers = async (req, res) => {
   try {
     const searchParam = req.query.searchString
-      ? // { $text: { $search: req.query.searchString } }
-
-        {
+      ? {
           $or: [
             {
               email: { $regex: `${req.query.searchString}`, $options: "i" }
@@ -173,7 +344,6 @@ const getSubscribedUsers = async (req, res) => {
           ]
         }
       : {};
-    // const status_filter = req.query.status ? { status: req.query.status } : {};
     const type_filter = req.query.status
       ? { subscribed: req.query.status }
       : {};
@@ -212,20 +382,26 @@ const getLatestUsers = async (req, res) => {
     const user = await User.find().sort({ $natural: -1 }).limit(5);
 
     await res.status(201).json({
-      user,
+      user
     });
   } catch (err) {
     res.status(500).json({
-      message: err.toString(),
+      message: err.toString()
     });
   }
 };
+
 export {
   registerUser,
+  recoverPassword,
   userlogs,
   getProfile,
   toggleActiveStatus,
   newsletterSubscription,
   getSubscribedUsers,
-  getLatestUsers
+  getLatestUsers,
+  authUser,
+  verifyRecoverCode,
+  resetPassword,
+  editProfile,verifyAndREsetPassword
 };

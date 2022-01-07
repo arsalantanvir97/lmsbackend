@@ -7,7 +7,8 @@ import {
   toggleActiveStatus,
   courseDetails,
   editCourse,
-  allCourses
+  allCourses,
+  groupedCourses
 } from "../controllers/courseController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -17,5 +18,7 @@ router.get("/toggle-active/:id", protect, toggleActiveStatus);
 router.get("/courseDetails/:id", protect, courseDetails);
 router.post("/editCourse", protect, editCourse);
 router.get("/allCourses", protect, allCourses);
+router.get("/groupedCourses", protect, groupedCourses);
+
 
 export default router;

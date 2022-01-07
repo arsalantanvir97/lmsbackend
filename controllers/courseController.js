@@ -185,11 +185,40 @@ const allCourses = async (req, res) => {
     });
   }
 };
+const groupedCourses = async (req, res) => {
+  try {
+    const categoryCourses = await Course.aggregate([
+        { $group: {
+           '_id': {coursecategory:"$coursecategory", },
+           "count" : { "$sum": 1 }
+        }},
+        // { $group: {
+        //    '_id': "$_id.id",
+        //    "ListOfName" : {"$push" : {Name:"$_id.Name", Frequency: "$count"}}
+        // }},
+     ],
+  
+     );
+     console.log('categoryCourses',categoryCourses)
+    // if (allCourses) {
+    //   console.log("allCourses", allCourses);
+    //   res.status(201).json({
+    //     allCourses
+    //   });
+    // }
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
 export {
   createCourse,
   courselogs,
   toggleActiveStatus,
   courseDetails,
   editCourse,
-  allCourses
+  allCourses,
+  groupedCourses,
+  
 };
