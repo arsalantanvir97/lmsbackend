@@ -127,11 +127,38 @@ const userRegisteredcourseslogs = async (req, res) => {
 const registeredcoursesDetails = async (req, res) => {
   try {
     console.log("req.params.id", req.params.id);
-    const registeredCourse = await RegisteredCourse.findById(
-      req.params.id
-    ).populate("userid courseid");
+    const registeredCourse = await RegisteredCourse.findOne({
+      courseid: req.params.id
+    }) .populate({
+      path:"courseid userid",
+      populate :{
+        path : "coursecategory"
+      }
+      
+
+    });
     await res.status(201).json({
       registeredCourse
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+const getallResgisteredCoursesofUser = async (req, res) => {
+  // console.log('getallNotification')
+  const { id } = req.body;
+  console.log("req.body", req.body);
+  try {
+    const registeredcourses = await RegisteredCourse.find({
+      userid: id
+    }).populate("userid courseid");
+
+    // console.log('notification',notification)
+    await res.status(201).json({
+      registeredcourses
     });
   } catch (err) {
     res.status(500).json({
@@ -144,5 +171,5 @@ export {
   registeredcourseslogs,
   registeredcoursesDetails,
   userRegisteredcourseslogs,
-  
+  getallResgisteredCoursesofUser
 };

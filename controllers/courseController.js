@@ -202,7 +202,8 @@ const groupedCourses = async (req, res) => {
               startingdate: "$startingdate",
               coursecode: "$coursecode",
               images: "$images",
-              courseduraion: "$courseduraion"
+              courseduraion: "$courseduraion",
+              _id: "$_id"
             }
           }
         }
