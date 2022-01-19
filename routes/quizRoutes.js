@@ -6,7 +6,8 @@ import {
   deleteQuiz,
   quizlogs,
   editQuiz,
-  quizDetails
+  quizDetails,
+  quizzCourseid
 } from "../controllers/quizController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -15,5 +16,6 @@ router.get("/deleteQuiz/:id", protect, deleteQuiz);
 router.get("/quizlogs", protect, quizlogs);
 router.post("/editQuiz", protect, editQuiz);
 router.get("/quizDetails/:id", protect, quizDetails);
+router.get("/quizzCourseid/:id", protect, quizzCourseid);
 
 export default router;

@@ -1,3 +1,4 @@
+import Mongoose from "mongoose";
 import Quiz from "../models/QuizModel.js";
 
 const createQuiz = async (req, res) => {
@@ -128,7 +129,7 @@ const editQuiz = async (req, res) => {
 
 const deleteQuiz = async (req, res) => {
   try {
-    await Quiz.findByIdAndRemove(req.params.id)
+    await Quiz.findByIdAndRemove(req.params.id);
     return res.status(201).json({ message: "Quiz Deleted" });
   } catch (err) {
     res.status(500).json({
@@ -151,4 +152,63 @@ const quizDetails = async (req, res) => {
     });
   }
 };
-export { createQuiz, deleteQuiz, quizlogs, editQuiz, quizDetails };
+
+const quizzCourseid = async (req, res) => {
+  try {
+    const searchParam = req.query.searchString
+      ? {
+          $or: [
+            {
+              name: { $regex: `${req.query.searchString}`, $options: "i" }
+            }
+          ]
+        }
+      : {};
+    const status_filter = req.query.status ? { status: req.query.status } : {};
+
+    const from = req.query.from;
+    const to = req.query.to;
+    let dateFilter = {};
+    if (from && to)
+      dateFilter = {
+        createdAt: {
+          $gte: moment.utc(new Date(from)).startOf("day"),
+          $lte: moment.utc(new Date(to)).endOf("day")
+        }
+      };
+    console.log("req.params.id", req.params.id);
+
+    const quiz = await Quiz.paginate(
+      {
+        courseid: Mongoose.mongo.ObjectId(req.params.id),
+        ...searchParam,
+        ...status_filter,
+        ...dateFilter
+      },
+      {
+        page: req.query.page,
+        limit: req.query.perPage,
+        lean: true,
+        sort: "-_id",
+        populate: "userid courseid lectureid"
+      }
+    );
+    await res.status(200).json({
+      quiz
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+export {
+  createQuiz,
+  deleteQuiz,
+  quizlogs,
+  editQuiz,
+  quizDetails,
+  quizzCourseid
+};

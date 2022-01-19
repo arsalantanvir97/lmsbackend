@@ -7,7 +7,8 @@ import {
   lectureDetails,
   editLecture,
   deleteLecture,
-  allLectures
+  allLectures,
+  lectureDetailsbyCourseid
 } from "../controllers/lectureController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -17,5 +18,7 @@ router.get("/lectureDetails/:id", protect, lectureDetails);
 router.post("/editLecture", protect, editLecture);
 router.get("/deleteLecture/:id", protect, deleteLecture);
 router.get("/allLectures", protect, allLectures);
+router.get("/lectureDetailsbyCourseid/:id", protect, lectureDetailsbyCourseid);
+
 
 export default router;

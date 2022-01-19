@@ -72,17 +72,35 @@ const lectureDetails = async (req, res) => {
   try {
     console.log("req.params.id", req.params.id);
     const lecture = await Lecture.findById(req.params.id).populate({
-      path:"courseid",
-      populate :{
-        path : "coursecategory"
+      path: "courseid",
+      populate: {
+        path: "coursecategory"
       }
-      
-
     });
     await res.status(201).json({
       lecture
     });
   } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const lectureDetailsbyCourseid = async (req, res) => {
+  try {
+    console.log("req.params.id", req.params.id);
+    const lecture = await Lecture.find({ courseid: req.params.id }).populate({
+      path: "courseid",
+      populate: {
+        path: "coursecategory"
+      }
+    });
+    await res.status(201).json({
+      lecture
+    });
+  } catch (err) {
+    console.log(err);
+
     res.status(500).json({
       message: err.toString()
     });
@@ -142,5 +160,6 @@ export {
   lectureDetails,
   editLecture,
   deleteLecture,
-  allLectures
+  allLectures,
+  lectureDetailsbyCourseid
 };

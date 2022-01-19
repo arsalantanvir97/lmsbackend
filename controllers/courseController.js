@@ -207,16 +207,26 @@ const groupedCourses = async (req, res) => {
             }
           }
         }
+      },
+      {
+        $lookup: {
+          from: "Category",
+          localField: "coursecategory",
+          foreignField: "_id",
+          as: "details"
+        }
       }
     ]);
     console.log("categoryCourses", categoryCourses);
     if (categoryCourses) {
+      // await Course.populate(categoryCourses, { path: "coursecategory" });
       console.log("categoryCourses", categoryCourses);
       res.status(201).json({
         categoryCourses
       });
     }
   } catch (err) {
+    console.log(err);
     res.status(500).json({
       message: err.toString()
     });
