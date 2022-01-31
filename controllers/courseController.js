@@ -232,6 +232,7 @@ const groupedCourses = async (req, res) => {
     });
   }
 };
+
 export {
   createCourse,
   courselogs,

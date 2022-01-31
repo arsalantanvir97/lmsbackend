@@ -1,5 +1,7 @@
 import moment from "moment";
 import RegisteredCourse from "../models/registeredCoursesModel";
+import Payment from "../models/PaymentModel";
+
 import Mongoose from "mongoose";
 
 const createregisteredCourses = async (req, res) => {
@@ -18,6 +20,14 @@ const createregisteredCourses = async (req, res) => {
       "M"
     );
     const createdregisteredcourses = await registeredcourses.save();
+    const payment = new Payment({
+      courseid,
+      userid,
+      type: "Purchased Course",
+      cost: Number(cost)
+    });
+    console.log("payment", payment);
+    const createdpayment = await payment.save();
     console.log("createdregisteredcourses", createdregisteredcourses);
     if (createdregisteredcourses) {
       res.status(201).json({

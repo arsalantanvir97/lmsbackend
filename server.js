@@ -24,8 +24,11 @@ import certificationRoutes from "./routes/certificationRoutes";
 import bookingRoutes from "./routes/bookingRoutes";
 import appointmentRoutes from "./routes/appointmentRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
+import paymentRoutes from "./routes/paymentRoutes";
+
 import Stripe from "stripe";
 const stripe = Stripe("sk_test_OVw01bpmRN2wBK2ggwaPwC5500SKtEYy9V");
+import { v4 as uuidv4 } from "uuid";
 
 dotenv.config();
 const PORT = 5095;
@@ -141,6 +144,8 @@ app.use("/api/certification", certificationRoutes);
 app.use("/api/booking", bookingRoutes);
 app.use("/api/appointment", appointmentRoutes);
 app.use("/api/notification", notificationRoutes);
+app.use("/api/payment", paymentRoutes);
+
 
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));

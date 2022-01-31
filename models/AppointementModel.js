@@ -13,7 +13,8 @@ const AppointmentSchema = mongoose.Schema(
     },
     type: { type: String },
     cost: { type: Number },
-    appointmentdate: { type: Date },
+    appointmentdate: { type: String },
+    description: { type: String },
     appointmenttime: { type: String },
     status: { type: String, default: "Pending" }
   },

@@ -6,7 +6,8 @@ import {
   appointmentlogs,
   appointmentDetails,
   deleteAppointment,
-  updatestatus
+  updatestatus,
+  userAppointmentlogs
 } from "../controllers/appointmentController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -15,5 +16,7 @@ router.get("/appointmentlogs", protect, appointmentlogs);
 router.get("/appointmentDetails/:id", protect, appointmentDetails);
 router.get("/deleteAppointment/:id", protect, deleteAppointment);
 router.post("/updatestatus", protect, updatestatus);
+router.get("/userAppointmentlogs", protect, userAppointmentlogs);
+
 
 export default router;
