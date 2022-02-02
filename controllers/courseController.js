@@ -1,3 +1,4 @@
+import Category from "../models/CategoryModel";
 import Course from "../models/CourseModel";
 
 const createCourse = async (req, res) => {
@@ -186,7 +187,7 @@ const allCourses = async (req, res) => {
 };
 const groupedCourses = async (req, res) => {
   try {
-    const categoryCourses = await Course.aggregate([
+    let categoryCourses = await Course.aggregate([
       {
         $group: {
           _id: { coursecategory: "$coursecategory" },
@@ -207,24 +208,18 @@ const groupedCourses = async (req, res) => {
             }
           }
         }
-      },
-      {
-        $lookup: {
-          from: "Category",
-          localField: "coursecategory",
-          foreignField: "_id",
-          as: "details"
-        }
       }
     ]);
-    console.log("categoryCourses", categoryCourses);
-    if (categoryCourses) {
-      // await Course.populate(categoryCourses, { path: "coursecategory" });
-      console.log("categoryCourses", categoryCourses);
-      res.status(201).json({
-        categoryCourses
-      });
-    }
+
+    await Promise.all(
+      categoryCourses.map(async (coures) => {
+        coures.category = await Category.findById(coures._id.coursecategory);
+      })
+    );
+
+    res.status(201).json({
+      categoryCourses
+    });
   } catch (err) {
     console.log(err);
     res.status(500).json({

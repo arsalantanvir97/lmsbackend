@@ -157,6 +157,28 @@ const registeredcoursesDetails = async (req, res) => {
   }
 };
 
+const updateRegisteredCourse = async (req, res) => {
+  try {
+    console.log("req.params.id", req.params.id);
+    const registeredCourse = await RegisteredCourse.findOne({
+      courseid: req.params.id
+    })
+    registeredCourse.certificate=true
+    registeredCourse.completionDate=new Date()
+
+    const updatedregisteredcourse=await registeredCourse.save()
+    await res.status(201).json({
+      updatedregisteredcourse
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+
+
 const getallResgisteredCoursesofUser = async (req, res) => {
   // console.log('getallNotification')
   const { id } = req.body;
@@ -181,5 +203,6 @@ export {
   registeredcourseslogs,
   registeredcoursesDetails,
   userRegisteredcourseslogs,
-  getallResgisteredCoursesofUser
+  getallResgisteredCoursesofUser,
+  updateRegisteredCourse
 };

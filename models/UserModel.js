@@ -24,11 +24,19 @@ const UserSchema = mongoose.Schema(
       type: Boolean,
       default: false
     },
+    enterprisesubscribed: {
+      type: Boolean,
+      default: false
+    },
     userImage: { type: String },
     enterpriseid: {
       type: String
     },
-    type: { type: String }
+    type: { type: String },
+    subscriptiondetails: { type: Object },
+
+    voxusername: { type: String }
+
   },
   {
     timestamps: true

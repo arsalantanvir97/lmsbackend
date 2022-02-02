@@ -22,7 +22,14 @@ const RegisteredCourseSchema = mongoose.Schema(
     },
     cost: {
       type: Number
-    }
+    },
+    certificate: {
+      type: Boolean,
+      default:false
+    },
+    completionDate: {
+      type: Date
+    },
   },
   {
     timestamps: true

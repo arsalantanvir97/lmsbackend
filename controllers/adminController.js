@@ -19,6 +19,8 @@ import {
   comparePassword,
   generateHash
 } from "../queries";
+import { addSoaUser } from "../services/SoaChat.js";
+import { CREATE_VOX_USER } from "../services/VoxImplant.js";
 
 const registerAdmin = async (req, res) => {
   const { fullName, email, password } = req.body;
@@ -38,6 +40,8 @@ const registerAdmin = async (req, res) => {
   });
 
   if (admin) {
+    await CREATE_VOX_USER(admin.fullName, user.password,admin._id);
+
     res.status(201).json({
       _id: admin._id,
       fullName: admin.fullName,
@@ -59,6 +63,7 @@ const authAdmin = asyncHandler(async (req, res) => {
   const admin = await Admin.findOne({ email });
 
   if (admin && (await admin.matchPassword(password))) {
+   await addSoaUser(admin._id,admin.fullName)
     res.json({
       _id: admin._id,
       fullName: admin.fullName,

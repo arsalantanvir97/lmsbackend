@@ -12,6 +12,9 @@ import {
   comparePassword,
   generateHash
 } from "../queries";
+import { addSoaUser } from "../services/SoaChat.js";
+import { CREATE_VOX_USER } from "../services/VoxImplant.js";
+import { v4 as uuidv4 } from "uuid";
 
 const registerUser = async (req, res) => {
   const { username, confirmpassword, email, password, type } = req.body;
@@ -40,6 +43,10 @@ const registerUser = async (req, res) => {
   });
   console.log("user", user);
   if (user) {
+    const idempotency_key = uuidv4();
+
+    await CREATE_VOX_USER(user.username, user.password, idempotency_key);
+    user.voxusername = idempotency_key;
     user.mrno = user._id;
     const notification = {
       notifiableId: null,
@@ -57,6 +64,10 @@ const registerUser = async (req, res) => {
       _id: user._id,
       username: user.username,
       email: user.email,
+      voxusername: user.voxusername,
+      enterprisesubscribed: user.enterprisesubscribed,
+      subscriptiondetails: user.subscriptiondetails,
+
       type: user.type,
       userImage: user.userImage,
       token: generateToken(user._id),
@@ -68,18 +79,87 @@ const registerUser = async (req, res) => {
     });
   }
 };
+const registerEnterprise = async (req, res) => {
+  const { username, confirmpassword, email, password, type } = req.body;
+  let user_image =
+    req.files &&
+    req.files.user_image &&
+    req.files.user_image[0] &&
+    req.files.user_image[0].path;
+  console.log("req.body", req.body);
+  if (!comparePassword(password, confirmpassword))
+    return res.status(401).json({ error: "Password does not match" });
+  const UserExists = await User.findOne({ email });
+
+  if (UserExists) {
+    return res.status(401).json({
+      error: "User already exist"
+    });
+  }
+
+  const user = await User.create({
+    username,
+    password,
+    email,
+    type,
+    userImage: user_image
+  });
+  console.log("user", user);
+  if (user) {
+    const idempotency_key = uuidv4();
+
+    await CREATE_VOX_USER(user.username, user.password, idempotency_key);
+    user.voxusername = idempotency_key;
+    user.mrno = user._id;
+    const notification = {
+      notifiableId: null,
+      notificationType: "Admin",
+      title: `${type} Created`,
+      body: `A ${type} name ${username} has registered`,
+      payload: {
+        type: "USER",
+        id: user._id
+      }
+    };
+    CreateNotification(notification);
+    await user.save();
+    await res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      voxusername: user.voxusername,
+      enterprisesubscribed: user.enterprisesubscribed,
+      subscriptiondetails: user.subscriptiondetails,
+
+      type: user.type,
+      userImage: user.userImage,
+      token: generateToken(user._id),
+      message: "Successfully created user!"
+    });
+  } else {
+    return res.status(401).json({
+      error: "false"
+    });
+  }
+};
+
 const authUser = asyncHandler(async (req, res) => {
-  console.log("authAdmin");
-  const { email, password, confirmpassword } = req.body;
+  console.log("authAdmin", req.body);
+  const { email, password, confirmpassword, type } = req.body;
 
   if (!comparePassword(password, confirmpassword))
     return res.status(201).json({ message: "Password does not match" });
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, type });
   if (user && (await user.matchPassword(password))) {
+    await addSoaUser(user._id, user.username);
     await res.status(200).json({
       _id: user._id,
       username: user.username,
       email: user.email,
+      voxusername: user.voxusername,
+      enterprisesubscribed: user.enterprisesubscribed,
+      subscriptiondetails: user.subscriptiondetails,
+
       type: user.type,
       userImage: user.userImage,
       token: generateToken(user._id)
@@ -93,9 +173,9 @@ const authUser = asyncHandler(async (req, res) => {
 });
 const recoverPassword = async (req, res) => {
   console.log("recoverPassword");
-  const { email } = req.body;
+  const { email, type } = req.body;
   console.log("req.body", req.body);
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email, type });
   if (!user) {
     console.log("!user");
     return res.status(401).json({
@@ -150,6 +230,9 @@ const resetPassword = async (req, res) => {
         _id: updateduser._id,
         username: updateduser.username,
         email: updateduser.email,
+        voxusername: updateduser.voxusername,
+        enterprisesubscribed: updateduser.enterprisesubscribed,
+        subscriptiondetails: updateduser.subscriptiondetails,
         type: updateduser.type,
         userImage: updateduser.userImage,
         token: generateToken(updateduser._id)
@@ -190,6 +273,10 @@ const editProfile = async (req, res) => {
     _id: user._id,
     username: user.username,
     email: user.email,
+    voxusername: user.voxusername,
+    enterprisesubscribed: user.enterprisesubscribed,
+    subscriptiondetails: user.subscriptiondetails,
+
     type: user.type,
     userImage: user.userImage,
     token: generateToken(user._id)
@@ -216,11 +303,15 @@ const verifyAndREsetPassword = async (req, res) => {
         console.log("user", user);
         res.status(201).json({
           _id: user._id,
-    username: user.username,
-    email: user.email,
-    type: user.type,
-    userImage: user.userImage,
-    token: generateToken(user._id)
+          username: user.username,
+          email: user.email,
+          voxusername: user.voxusername,
+          enterprisesubscribed: user.enterprisesubscribed,
+          subscriptiondetails: user.subscriptiondetails,
+
+          type: user.type,
+          userImage: user.userImage,
+          token: generateToken(user._id)
         });
       }
     } else {
@@ -390,6 +481,50 @@ const getLatestUsers = async (req, res) => {
     });
   }
 };
+const enterpriseSubscription = async (req, res) => {
+  try {
+    const { id, subscriptiondetails } = req.body;
+
+    const user = await User.findById({ _id: id });
+    console.log("user", user);
+    user.subscriptiondetails = subscriptiondetails;
+    user.enterprisesubscribed = true;
+
+    await user.save();
+    await res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      voxusername: user.voxusername,
+      enterprisesubscribed: user.enterprisesubscribed,
+      subscriptiondetails: user.subscriptiondetails,
+
+      type: user.type,
+      userImage: user.userImage,
+      token: generateToken(user._id)
+    });
+  } catch (err) {
+    console.log("errrrrrrrr", err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+const addingEmployee = async (req, res) => {
+  console.log("recoverPassword");
+  const { id, enterprisename, name, email, courseid } = req.body;
+  console.log("req.body", req.body);
+
+  const html = `<p>You are receiving this because you have been mailed by an Enterprise named ${enterprisename} on LMS portal.
+          \n\n If you want to register on LMS portal visit the link below.            
+          \n\n <br/> https://www.google.com/search?q=Invitation&sxsrf=APq-WBsDPS4pSWKQgVqK-RRVSfo7GgVqxw%3A1643812817544&ei=0Zf6YevYINKTlwTcpIKIBg&ved=0ahUKEwirhcT4n-H1AhXSyYUKHVySAGEQ4dUDCA4&uact=5&oq=Invitation&gs_lcp=Cgdnd3Mtd2l6EAMyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEdKBAhBGABKBAh
+          </p>`;
+  await generateEmail(email, "LMS - Enterprise Invitation", html);
+  return res.status(201).json({
+    message: "Invitation Status Has Been Emailed To Given Email Address"
+  });
+};
 
 export {
   registerUser,
@@ -403,5 +538,9 @@ export {
   authUser,
   verifyRecoverCode,
   resetPassword,
-  editProfile,verifyAndREsetPassword
+  editProfile,
+  verifyAndREsetPassword,
+  registerEnterprise,
+  enterpriseSubscription,
+  addingEmployee
 };

@@ -3,6 +3,7 @@ import Payment from "../models/PaymentModel";
 import Mongoose from "mongoose";
 import moment from "moment";
 import CreateNotification from "../utills/notification.js";
+import { MakeFriends } from "../services/SoaChat";
 
 const createAppointment = async (req, res) => {
   const {
@@ -121,7 +122,7 @@ const deleteAppointment = async (req, res) => {
   }
 };
 const updatestatus = async (req, res) => {
-  const { status, id } = req.body;
+  const { status, id,adminid } = req.body;
   console.log("updatestatusreq.body", req.body);
   try {
     const appointment = await Appointment.findOne({ _id: id });
@@ -129,6 +130,9 @@ const updatestatus = async (req, res) => {
 
     appointment.status = status;
 if(status=='Accepted'){
+  if(appointment.type=='chat'){
+  await MakeFriends(adminid, appointment.userid)
+  }
   const notification = {
     notifiableId: null,
     notificationType: "User",
