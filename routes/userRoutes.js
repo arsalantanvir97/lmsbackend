@@ -16,12 +16,18 @@ import {
   editProfile,
   verifyAndREsetPassword,
   registerEnterprise,
-  enterpriseSubscription,addingEmployee
+  enterpriseSubscription,
+  addingEmployee,
+  registerEmployee,
+  enterpriseemployeelogs,
+  getEmployeeProfile,
+  getEditEmployeeProfile
 } from "../controllers/userController.js";
 import { protect } from "../middlewares/authMiddleware";
 
 router.post("/register", registerUser);
 router.post("/registerEnterprise", registerEnterprise);
+router.post("/registerEmployee", registerEmployee);
 
 router.post("/authUser", authUser);
 router.post("/userverifyRecoverCode", verifyRecoverCode);
@@ -30,6 +36,12 @@ router.post("/userresetPassword", resetPassword);
 router.post("/editProfile", protect, editProfile);
 
 router.get("/userlogs", protect, userlogs);
+router.get("/enterpriseemployeelogs/:id", protect, enterpriseemployeelogs);
+router.get("/getEmployeeProfile/:id", protect, getEmployeeProfile);
+router.get("/getEditEmployeeProfile/:id", protect, getEditEmployeeProfile);
+
+
+
 router.get("/getProfile/:id", protect, getProfile);
 router.get("/toggle-active/:id", protect, toggleActiveStatus);
 router.get("/newsletterSubscription/:id", protect, newsletterSubscription);

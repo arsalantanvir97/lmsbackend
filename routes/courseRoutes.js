@@ -8,7 +8,8 @@ import {
   courseDetails,
   editCourse,
   allCourses,
-  groupedCourses
+  groupedCourses,
+  categoryfiltergroupedCourses
 } from "../controllers/courseController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -19,6 +20,7 @@ router.get("/courseDetails/:id", protect, courseDetails);
 router.post("/editCourse", protect, editCourse);
 router.get("/allCourses", protect, allCourses);
 router.get("/groupedCourses", protect, groupedCourses);
+router.get("/categoryfiltergroupedCourses/:id", protect, categoryfiltergroupedCourses);
 
 
 export default router;

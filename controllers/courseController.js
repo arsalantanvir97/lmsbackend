@@ -1,5 +1,6 @@
 import Category from "../models/CategoryModel";
 import Course from "../models/CourseModel";
+import Mongoose from "mongoose";
 
 const createCourse = async (req, res) => {
   const {
@@ -228,6 +229,49 @@ const groupedCourses = async (req, res) => {
   }
 };
 
+const categoryfiltergroupedCourses = async (req, res) => {
+  try {
+    console.log("req.params.id ", req.params.id);
+    let categoryCourses = await Course.aggregate([
+      { $match: { coursecategory:  Mongoose.mongo.ObjectId(req.params.id) } },
+      {
+        $group: {
+          _id: { coursecategory: "$coursecategory" },
+          groupedata: {
+            $push: {
+              coursetitle: "$coursetitle",
+              coursecategory: "$coursecategory",
+              createdAt: "$createdAt",
+              coursedescription: "$coursedescription",
+              coursetitle: "$coursetitle",
+              coursefeature: "$coursefeature",
+              status: "$status",
+              startingdate: "$startingdate",
+              coursecode: "$coursecode",
+              images: "$images",
+              courseduraion: "$courseduraion",
+              _id: "$_id"
+            }
+          }
+        }
+      }
+    ]);
+    console.log("categoryCourses", categoryCourses);
+    await Promise.all(
+      categoryCourses.map(async (coures) => {
+        coures.category = await Category.findById(coures._id.coursecategory);
+      })
+    );
+    res.status(201).json({
+      categoryCourses
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
 export {
   createCourse,
   courselogs,
@@ -235,5 +279,6 @@ export {
   courseDetails,
   editCourse,
   allCourses,
-  groupedCourses
+  groupedCourses,
+  categoryfiltergroupedCourses
 };

@@ -15,6 +15,10 @@ import {
 import { addSoaUser } from "../services/SoaChat.js";
 import { CREATE_VOX_USER } from "../services/VoxImplant.js";
 import { v4 as uuidv4 } from "uuid";
+import RegisteredCourse from "../models/registeredCoursesModel.js";
+import Payment from "../models/PaymentModel.js";
+import Course from "../models/CourseModel.js";
+import Mongoose from "mongoose";
 
 const registerUser = async (req, res) => {
   const { username, confirmpassword, email, password, type } = req.body;
@@ -142,6 +146,103 @@ const registerEnterprise = async (req, res) => {
     });
   }
 };
+const registerEmployee = async (req, res) => {
+  const {
+    username,
+    confirmpassword,
+    email,
+    password,
+    type,
+    enterpriseid,
+    courseid
+  } = req.body;
+  console.log("req.body", req.body);
+  let user_image =
+    req.files &&
+    req.files.user_image &&
+    req.files.user_image[0] &&
+    req.files.user_image[0].path;
+  console.log("req.body", req.body);
+  if (!comparePassword(password, confirmpassword))
+    return res.status(401).json({ error: "Password does not match" });
+  const UserExists = await User.findOne({ email });
+
+  if (UserExists) {
+    return res.status(401).json({
+      error: "User already exist"
+    });
+  }
+  const user = await User.create({
+    username,
+    password,
+    email,
+    type,
+    enterpriseid,
+    userImage: user_image
+  });
+
+  console.log("user", user);
+  if (user) {
+    const course = await RegisteredCourse.findOne({ _id: courseid });
+    console.log("coursecoursecourse", course, course.courseid._id);
+    const registeredcourses = await new RegisteredCourse({
+      userid: user._id,
+      courseid: course.courseid._id,
+      duration: course.duration,
+      cost: course.cost
+    });
+    console.log("registeredcourses", registeredcourses);
+    registeredcourses.expiryDate = moment(registeredcourses.createdAt).add(
+      course.duration,
+      "M"
+    );
+    const createdregisteredcourses = await registeredcourses.save();
+    const payment = new Payment({
+      courseid: course.courseid._id,
+      userid: user._id,
+      type: "Purchased Course",
+      cost: Number(course.cost)
+    });
+    console.log("payment", payment);
+    const createdpayment = await payment.save();
+
+    const idempotency_key = uuidv4();
+
+    await CREATE_VOX_USER(user.username, user.password, idempotency_key);
+    user.voxusername = idempotency_key;
+    user.mrno = user._id;
+    const notification = {
+      notifiableId: null,
+      notificationType: "Enterprise",
+      title: `Employee Registered`,
+      body: `A user named ${username} has registered on our portal which you added as employee`,
+      payload: {
+        type: "USER",
+        id: user._id
+      }
+    };
+
+    CreateNotification(notification);
+    await user.save();
+    await res.status(201).json({
+      _id: user._id,
+      username: user.username,
+      email: user.email,
+      voxusername: user.voxusername,
+      enterprisesubscribed: user.enterprisesubscribed,
+      subscriptiondetails: user.subscriptiondetails,
+
+      type: user.type,
+      userImage: user.userImage,
+      token: generateToken(user._id),
+      message: "Successfully created user!"
+    });
+  } else {
+    return res.status(401).json({
+      error: "false"
+    });
+  }
+};
 
 const authUser = asyncHandler(async (req, res) => {
   console.log("authAdmin", req.body);
@@ -159,7 +260,7 @@ const authUser = asyncHandler(async (req, res) => {
       voxusername: user.voxusername,
       enterprisesubscribed: user.enterprisesubscribed,
       subscriptiondetails: user.subscriptiondetails,
-
+      enterpriseid: user.enterpriseid,
       type: user.type,
       userImage: user.userImage,
       token: generateToken(user._id)
@@ -230,6 +331,8 @@ const resetPassword = async (req, res) => {
         _id: updateduser._id,
         username: updateduser.username,
         email: updateduser.email,
+        enterpriseid: updateduser.enterpriseid,
+
         voxusername: updateduser.voxusername,
         enterprisesubscribed: updateduser.enterprisesubscribed,
         subscriptiondetails: updateduser.subscriptiondetails,
@@ -276,6 +379,7 @@ const editProfile = async (req, res) => {
     voxusername: user.voxusername,
     enterprisesubscribed: user.enterprisesubscribed,
     subscriptiondetails: user.subscriptiondetails,
+    enterpriseid: user.enterpriseid,
 
     type: user.type,
     userImage: user.userImage,
@@ -308,6 +412,7 @@ const verifyAndREsetPassword = async (req, res) => {
           voxusername: user.voxusername,
           enterprisesubscribed: user.enterprisesubscribed,
           subscriptiondetails: user.subscriptiondetails,
+          enterpriseid: user.enterpriseid,
 
           type: user.type,
           userImage: user.userImage,
@@ -383,6 +488,61 @@ const getProfile = async (req, res) => {
     const user = await User.findById(req.params.id);
     await res.status(201).json({
       user
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+const getEmployeeProfile = async (req, res) => {
+  try {
+    console.log("req.params.id", req.params.id);
+    const user = await User.findById(req.params.id);
+    const course = await RegisteredCourse.find({
+      userid: req.params.id
+    }).populate({
+      path: "courseid userid",
+      populate: {
+        path: "coursecategory"
+      }
+    });
+    await res.status(201).json({
+      user,
+      course
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const getEditEmployeeProfile = async (req, res) => {
+  try {
+    console.log(
+      "req.params.id",
+      req.params.enterpriseid,
+      req.params.userid,
+      req.query.enterpriseid,
+      req.query.userid
+    );
+    const user = await User.findById(req.params.id);
+    let course = await RegisteredCourse.find({
+      $or: [{ userid: req.query.enterpriseid }, { userid: req.query.userid }]
+    }).populate({
+      path: "courseid userid",
+      populate: {
+        path: "coursecategory"
+      }
+    });
+console.log('course',course);
+    course=course.filter((coursse)=>(
+      coursse
+    ))
+    await res.status(201).json({
+      user,
+      course
     });
   } catch (err) {
     res.status(500).json({
@@ -498,6 +658,7 @@ const enterpriseSubscription = async (req, res) => {
       voxusername: user.voxusername,
       enterprisesubscribed: user.enterprisesubscribed,
       subscriptiondetails: user.subscriptiondetails,
+      enterpriseid: user.enterpriseid,
 
       type: user.type,
       userImage: user.userImage,
@@ -514,16 +675,80 @@ const enterpriseSubscription = async (req, res) => {
 const addingEmployee = async (req, res) => {
   console.log("recoverPassword");
   const { id, enterprisename, name, email, courseid } = req.body;
-  console.log("req.body", req.body);
+  console.log("req.body", req.body, courseid);
 
-  const html = `<p>You are receiving this because you have been mailed by an Enterprise named ${enterprisename} on LMS portal.
+  const html = `<p>You are receiving this because you have been added by an Enterprise named ${enterprisename} on LMS portal.
           \n\n If you want to register on LMS portal visit the link below.            
-          \n\n <br/> https://www.google.com/search?q=Invitation&sxsrf=APq-WBsDPS4pSWKQgVqK-RRVSfo7GgVqxw%3A1643812817544&ei=0Zf6YevYINKTlwTcpIKIBg&ved=0ahUKEwirhcT4n-H1AhXSyYUKHVySAGEQ4dUDCA4&uact=5&oq=Invitation&gs_lcp=Cgdnd3Mtd2l6EAMyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEcyBAgAEEdKBAhBGABKBAh
+          \n\n <br/> http://localhost:3000/LMS/user/EmployeeSignup/${id}/${courseid}
           </p>`;
   await generateEmail(email, "LMS - Enterprise Invitation", html);
+  const notification = {
+    notifiableId: null,
+    notificationType: "Admin",
+    title: `Employee Added`,
+    body: `An Enterprise named ${enterprisename} just added ${name} to the portal`,
+    payload: {
+      type: "USER",
+      id: id
+    }
+  };
+  CreateNotification(notification);
   return res.status(201).json({
     message: "Invitation Status Has Been Emailed To Given Email Address"
   });
+};
+// \n\n <br/> https://dev74.onlinetestingserver.com/LMS/user/EnterpriseSignup/${id}/${courseid}
+
+const enterpriseemployeelogs = async (req, res) => {
+  try {
+    const searchParam = req.query.searchString
+      ? {
+          $or: [
+            {
+              username: { $regex: `${req.query.searchString}`, $options: "i" }
+            },
+            {
+              email: { $regex: `${req.query.searchString}`, $options: "i" }
+            }
+          ]
+        }
+      : {};
+    const status_filter = req.query.status ? { status: req.query.status } : {};
+
+    const from = req.query.from;
+    const to = req.query.to;
+    let dateFilter = {};
+    if (from && to)
+      dateFilter = {
+        createdAt: {
+          $gte: moment.utc(new Date(from)).startOf("day"),
+          $lte: moment.utc(new Date(to)).endOf("day")
+        }
+      };
+    console.log("req.params.id", req.params.id);
+    const users = await User.paginate(
+      {
+        enterpriseid: req.params.id,
+        ...searchParam,
+        ...status_filter,
+        ...dateFilter
+      },
+      {
+        page: req.query.page,
+        limit: req.query.perPage,
+        lean: true,
+        sort: "-_id"
+      }
+    );
+    await res.status(200).json({
+      users
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
 };
 
 export {
@@ -542,5 +767,9 @@ export {
   verifyAndREsetPassword,
   registerEnterprise,
   enterpriseSubscription,
-  addingEmployee
+  addingEmployee,
+  registerEmployee,
+  enterpriseemployeelogs,
+  getEmployeeProfile,
+  getEditEmployeeProfile
 };
