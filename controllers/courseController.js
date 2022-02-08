@@ -229,6 +229,28 @@ const groupedCourses = async (req, res) => {
   }
 };
 
+const filterCoursebyText = async (req, res) => {
+  const {searchString
+} = req.body;
+console.log('req.body',searchString,typeof(searchString));
+  try {
+    const filteredCourse = await Course.find({coursetitle: {$regex: searchString, "$options": "i"}})
+    console.log('filteredCourseeeee',filteredCourse);
+    if (filteredCourse) { 
+      console.log("filteredCourse", filteredCourse);
+      res.status(201).json({
+        filteredCourse
+      });
+    }
+  } catch (err) {
+    console.log('err',err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+
 const categoryfiltergroupedCourses = async (req, res) => {
   try {
     console.log("req.params.id ", req.params.id);
@@ -272,13 +294,31 @@ const categoryfiltergroupedCourses = async (req, res) => {
     });
   }
 };
+const courseByCategory = async (req, res) => {
+  try {
+    console.log("req.params.id", req.params.id);
+    const course = await Course.find({coursecategory:req.params.id}).populate(
+      "coursecategory"
+    );
+    await res.status(201).json({
+      course
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
 export {
   createCourse,
   courselogs,
   toggleActiveStatus,
   courseDetails,
   editCourse,
+  courseByCategory,
   allCourses,
   groupedCourses,
-  categoryfiltergroupedCourses
+  categoryfiltergroupedCourses,
+  filterCoursebyText
 };

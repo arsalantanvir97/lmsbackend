@@ -14,7 +14,7 @@ const RegisteredCourseSchema = mongoose.Schema(
     lecture: {
       type: Array
     },
-    expiryDate: {
+    expirydate: {
       type: Date
     },
     duration: {

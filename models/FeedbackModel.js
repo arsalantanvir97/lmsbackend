@@ -9,6 +9,9 @@ const FeedbackSchema = mongoose.Schema(
       ref: "User"
     },
     type: { type: String },
+    fullname: { type: String },
+    email: { type: String },
+usertype:{ type: String },
     subject: { type: String },
     message: { type: String },
     courseid: {

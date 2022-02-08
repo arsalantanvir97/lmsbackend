@@ -25,6 +25,7 @@ import bookingRoutes from "./routes/bookingRoutes";
 import appointmentRoutes from "./routes/appointmentRoutes";
 import notificationRoutes from "./routes/notificationRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
+import subscriptionRoutes from "./routes/subscriptionRoutes";
 
 import Stripe from "stripe";
 const stripe = Stripe("sk_test_OVw01bpmRN2wBK2ggwaPwC5500SKtEYy9V");
@@ -41,13 +42,13 @@ if (local) {
   credentials = {
     key: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.key", "utf8"),
     cert: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.crt", "utf8"),
-    ca: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.ca"),
+    ca: fs.readFileSync("/etc/apache2/ssl/onlinetestingserver.ca")
   };
 } else {
   credentials = {
     key: fs.readFileSync("../certs/ssl.key"),
     cert: fs.readFileSync("../certs/ssl.crt"),
-    ca: fs.readFileSync("../certs/ca-bundle"),
+    ca: fs.readFileSync("../certs/ca-bundle")
   };
 }
 connectDB();
@@ -67,7 +68,7 @@ app.post("/api/checkout", async (req, res) => {
     console.log(product, typeof product, "prodprice");
     const customer = await stripe.customers.create({
       email: token.email,
-      source: token.id,
+      source: token.id
     });
 
     const idempotency_key = uuidv4();
@@ -85,12 +86,12 @@ app.post("/api/checkout", async (req, res) => {
             line2: token.card.address_line2,
             city: token.card.address_city,
             country: token.card.address_country,
-            postal_code: token.card.address_zip,
-          },
-        },
+            postal_code: token.card.address_zip
+          }
+        }
       },
       {
-        idempotency_key,
+        idempotency_key
       }
     );
     console.log("Charge:", { charge });
@@ -103,7 +104,6 @@ app.post("/api/checkout", async (req, res) => {
     res.json(error);
   }
 });
-
 
 app.use(
   multer({
@@ -145,7 +145,7 @@ app.use("/api/booking", bookingRoutes);
 app.use("/api/appointment", appointmentRoutes);
 app.use("/api/notification", notificationRoutes);
 app.use("/api/payment", paymentRoutes);
-
+app.use("/api/subscription", subscriptionRoutes);
 
 const __dirname = path.resolve();
 app.use("/uploads", express.static(__dirname + "/uploads"));

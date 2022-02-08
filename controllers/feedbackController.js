@@ -24,6 +24,32 @@ const createFeedback = async (req, res) => {
     });
   }
 };
+const unregisteredcreateFeedback = async (req, res) => {
+  const { type,
+    fullname,
+    email,
+    subject,
+    message ,} = req.body;
+  console.log("req.body", req.body);
+  const data = req.body;
+  console.log("data", data);
+  try {
+    const feedback = new Feedback(data);
+    console.log("feedback", feedback);
+
+    const feedbackcreated = await feedback.save();
+    console.log("feedbackcreated", feedbackcreated);
+    if (feedbackcreated) {
+      res.status(201).json({
+        feedbackcreated
+      });
+    }
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
 const Feedbacklogs = async (req, res) => {
   try {
     console.log("req.query.searchString", req.query.searchString);
@@ -86,4 +112,4 @@ const getFeedbackDetails = async (req, res) => {
   }
 };
 
-export { createFeedback, Feedbacklogs, getFeedbackDetails };
+export { createFeedback, Feedbacklogs, getFeedbackDetails ,unregisteredcreateFeedback};

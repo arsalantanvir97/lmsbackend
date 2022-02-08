@@ -16,7 +16,11 @@ const PaymentSchema = mongoose.Schema(
       ref: "Appointment"
     },
     type: { type: String },
-    cost: { type: Number }
+    cost: { type: Number },
+    duration:{ type: Number },
+    expiryDate: {
+      type: Date
+    },
   },
   {
     timestamps: true

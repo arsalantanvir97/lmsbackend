@@ -9,18 +9,22 @@ import {
   editCourse,
   allCourses,
   groupedCourses,
-  categoryfiltergroupedCourses
+  categoryfiltergroupedCourses,
+  courseByCategory,
+  filterCoursebyText
 } from "../controllers/courseController";
 import { protect } from "../middlewares/authMiddleware";
 
 router.post("/createCourse", protect, createCourse);
 router.get("/courselogs", protect, courselogs);
 router.get("/toggle-active/:id", protect, toggleActiveStatus);
-router.get("/courseDetails/:id", protect, courseDetails);
+router.get("/courseDetails/:id",  courseDetails);
 router.post("/editCourse", protect, editCourse);
 router.get("/allCourses", protect, allCourses);
-router.get("/groupedCourses", protect, groupedCourses);
-router.get("/categoryfiltergroupedCourses/:id", protect, categoryfiltergroupedCourses);
+router.get("/groupedCourses",  groupedCourses);
+router.get("/categoryfiltergroupedCourses/:id", categoryfiltergroupedCourses);
+router.get("/courseByCategory/:id",  courseByCategory);
+router.post("/filterCoursebyText",  filterCoursebyText);
 
 
 export default router;

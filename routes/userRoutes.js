@@ -21,7 +21,9 @@ import {
   registerEmployee,
   enterpriseemployeelogs,
   getEmployeeProfile,
-  getEditEmployeeProfile
+  getEditEmployeeProfile,
+  editEmployee,
+  getcount
 } from "../controllers/userController.js";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -34,6 +36,7 @@ router.post("/userverifyRecoverCode", verifyRecoverCode);
 router.post("/userRecoverPassword", recoverPassword);
 router.post("/userresetPassword", resetPassword);
 router.post("/editProfile", protect, editProfile);
+router.post("/editEmployee", protect, editEmployee);
 
 router.get("/userlogs", protect, userlogs);
 router.get("/enterpriseemployeelogs/:id", protect, enterpriseemployeelogs);
@@ -50,6 +53,7 @@ router.get("/getlatestusers", protect, getLatestUsers);
 router.post("/verifyAndREsetPassword", protect, verifyAndREsetPassword);
 router.post("/enterpriseSubscription", enterpriseSubscription);
 router.post("/addingEmployee", addingEmployee);
+router.get("/getcount", getcount);
 
 
 export default router;

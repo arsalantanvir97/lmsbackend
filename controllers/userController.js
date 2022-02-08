@@ -6,6 +6,7 @@ import CreateNotification from "../utills/notification.js";
 import moment from "moment";
 import asyncHandler from "express-async-handler";
 import generateCode from "../services/generate_code.js";
+import lodash from "lodash";
 import {
   createResetToken,
   verifyPassword,
@@ -17,6 +18,8 @@ import { CREATE_VOX_USER } from "../services/VoxImplant.js";
 import { v4 as uuidv4 } from "uuid";
 import RegisteredCourse from "../models/registeredCoursesModel.js";
 import Payment from "../models/PaymentModel.js";
+import Subscription from "../models/SubscriptionModel";
+
 import Course from "../models/CourseModel.js";
 import Mongoose from "mongoose";
 
@@ -200,8 +203,11 @@ const registerEmployee = async (req, res) => {
     const payment = new Payment({
       courseid: course.courseid._id,
       userid: user._id,
+      duration:course.duration,
       type: "Purchased Course",
-      cost: Number(course.cost)
+      cost: Number(course.cost),
+      expirydate:registeredcourses.expiryDate
+
     });
     console.log("payment", payment);
     const createdpayment = await payment.save();
@@ -527,24 +533,45 @@ const getEditEmployeeProfile = async (req, res) => {
       req.query.enterpriseid,
       req.query.userid
     );
-    const user = await User.findById(req.params.id);
-    let course = await RegisteredCourse.find({
-      $or: [{ userid: req.query.enterpriseid }, { userid: req.query.userid }]
-    }).populate({
-      path: "courseid userid",
-      populate: {
-        path: "coursecategory"
-      }
-    });
-console.log('course',course);
-    course=course.filter((coursse)=>(
-      coursse
-    ))
+
+    const [user, course, course2] = await Promise.all([
+      User.findById(req.params.id),
+      RegisteredCourse.find({
+        userid: { $eq: req.query.enterpriseid }
+      }).populate({
+        path: "courseid userid",
+        populate: {
+          path: "coursecategory"
+        }
+      }),
+      RegisteredCourse.find({
+        userid: { $eq: req.query.userid }
+      }).populate({
+        path: "courseid userid",
+        populate: {
+          path: "coursecategory"
+        }
+      })
+    ]);
+    //     let resultt=[]
+    //     var result = course.filter(function (o1) {
+    //       return !course2.some(function (o2) {
+    //         console.log('outisde,',o1.courseid.coursetitle,o2.courseid.coursetitle);
+    //           if(o1.courseid.coursetitle !== o2.courseid.coursetitle){
+    // console.log('INSIDEBLOCK,',o1.courseid.coursetitle,o2.courseid.coursetitle);
+    // resultt.push(o1)
+    //           }
+    //      });
+    //   });
+
+    // course = course.filter((coursse) => coursse);
     await res.status(201).json({
       user,
-      course
+      course,
+      course2
     });
   } catch (err) {
+    console.log("err", err);
     res.status(500).json({
       message: err.toString()
     });
@@ -651,6 +678,16 @@ const enterpriseSubscription = async (req, res) => {
     user.enterprisesubscribed = true;
 
     await user.save();
+
+    const subscriptionnn = new Subscription({
+      subscriptionname: subscriptiondetails.subscriptionname,
+      userid: user._id,
+
+      subscriptionprice: Number(subscriptiondetails.subscriptionprice)
+    });
+    console.log("subscriptionnn", subscriptionnn);
+    const createdsubscriptionnn = await subscriptionnn.save();
+
     await res.status(201).json({
       _id: user._id,
       username: user.username,
@@ -751,6 +788,138 @@ const enterpriseemployeelogs = async (req, res) => {
   }
 };
 
+const editEmployee = async (req, res) => {
+  const { id, name, selected, enterpriseid, alreadyregistered } = req.body;
+  console.log("selected", selected, alreadyregistered);
+  try {
+    const user = await User.findOne({ _id: id });
+    user.username = name;
+    await user.save();
+
+    // var result =
+    //   selected.length > 0 &&
+    //   selected.filter(function (o1) {
+    //     return (
+    //       alreadyregistered.length > 0 &&
+    //       !alreadyregistered.some(function (o2) {
+    //         console.log(
+    //           "outisde,",
+    //           o1.value.courseid.coursetitle,
+    //           o2.courseid.coursetitle
+    //         );
+    //         if (o1.value.courseid.coursetitle !== o2.courseid.coursetitle) {
+    //           console.log(
+    //             "INSIDEBLOCK,",
+    //             o1.value.courseid.coursetitle,
+    //             o2.courseid.coursetitle
+    //           );
+    //           coursetobeRegistered.push(o1);
+    //         } else if (
+    //           o1.value.courseid.coursetitle == o2.courseid.coursetitle
+    //         ) {
+    //           console.log(
+    //             "matchedblock",
+    //             o1.value.courseid.coursetitle,
+    //             o2.courseid.coursetitle
+    //           );
+    //           courseregisteredalready.push(o1);
+    //         }
+    //       })
+    //     );
+    //   });
+    let coursetobeRegistered;
+    let courseregisteredalready;
+    coursetobeRegistered = selected.filter(function (sel) {
+      return !alreadyregistered.find(function (alre) {
+        return sel.value.courseid.coursetitle == alre.courseid.coursetitle;
+      });
+    });
+    courseregisteredalready = selected.filter(function (sel) {
+      return alreadyregistered.find(function (alre) {
+        return sel.value.courseid.coursetitle == alre.courseid.coursetitle;
+      });
+    });
+    console.log("coursetobeRegistered", coursetobeRegistered);
+    console.log("courseregisteredalready", courseregisteredalready);
+
+    if (courseregisteredalready.length == 0) {
+      console.log("removeeeeeeeeeeee");
+      await RegisteredCourse.deleteMany({ userid: id });
+      await Payment.deleteMany({ userid: id });
+    }
+    if (coursetobeRegistered.length > 0) {
+      await Promise.all(
+        coursetobeRegistered.length > 0 &&
+          coursetobeRegistered.map(async (coures) => {
+            const registeredcourses = await new RegisteredCourse({
+              userid: id,
+              courseid: coures.value.courseid._id,
+              duration: coures.value.duration,
+              cost: coures.value.cost
+            });
+            console.log("registeredcourses", registeredcourses);
+            registeredcourses.expiryDate = moment(
+              registeredcourses.createdAt
+            ).add(coures.value.duration, "M");
+            const createdregisteredcourses = await registeredcourses.save();
+            const payment = new Payment({
+              courseid: coures.value.courseid._id,
+              userid: id,
+              type: "Purchased Course",
+              duration:coures.value.duration,
+              cost: Number(coures.value.cost),
+              expirydate:registeredcourses.expiryDate
+
+            });
+            console.log("payment", payment);
+            const createdpayment = await payment.save();
+          })
+      );
+    }
+    // await Promise.all(
+    //   selected.length > 0 &&
+    //     selected.map(async (coures) => {
+    //       // console.log('couresssssssssssssss',coures,coures.userid,coures.courseid);
+    //       alreadyregistered.push(
+    //         await RegisteredCourse.findOne({
+    //           userid: coures.value.userid._id,
+    //           courseid: coures.value.courseid._id
+    //         }).populate({
+    //           path: "courseid userid",
+    //           populate: {
+    //             path: "coursecategory"
+    //           }
+    //         })
+    //       );
+    //       console.log("alreadyregistered", alreadyregistered);
+    //     })
+    // );
+    await res.status(201).json({
+      user
+    });
+  } catch (err) {
+    console.log("err", err);
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const getcount= async (req, res) => {
+  try {
+    const [user, course] = await Promise.all([
+      User.count(),
+      Course.count(),
+    ]);
+   
+    await res.status(201).json({
+      user, course
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
 export {
   registerUser,
   recoverPassword,
@@ -771,5 +940,7 @@ export {
   registerEmployee,
   enterpriseemployeelogs,
   getEmployeeProfile,
-  getEditEmployeeProfile
+  getEditEmployeeProfile,
+  editEmployee,
+  getcount
 };

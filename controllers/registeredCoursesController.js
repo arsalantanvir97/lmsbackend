@@ -24,7 +24,9 @@ const createregisteredCourses = async (req, res) => {
       courseid,
       userid,
       type: "Purchased Course",
-      cost: Number(cost)
+      duration:duration,
+      cost: Number(cost),
+      expirydate:registeredcourses.expiryDate
     });
     console.log("payment", payment);
     const createdpayment = await payment.save();
@@ -138,7 +140,29 @@ const registeredcoursesDetails = async (req, res) => {
   try {
     console.log("req.params.id", req.params.id);
     const registeredCourse = await RegisteredCourse.findOne({
-      courseid: req.params.id
+      courseid: req.params.id,userid:req.query.userid
+    }) .populate({
+      path:"courseid userid",
+      populate :{
+        path : "coursecategory"
+      }
+      
+
+    });
+    await res.status(201).json({
+      registeredCourse
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const registeredcoursesDetailsby_id = async (req, res) => {
+  try {
+    console.log("req.params.id", req.params.id);
+    const registeredCourse = await RegisteredCourse.findOne({
+      _id: req.params.id
     }) .populate({
       path:"courseid userid",
       populate :{
@@ -158,11 +182,13 @@ const registeredcoursesDetails = async (req, res) => {
 };
 
 const updateRegisteredCourse = async (req, res) => {
+  console.log('updateRegisteredCourse');
   try {
-    console.log("req.params.id", req.params.id);
+    console.log("req.params.id", req.params.id,req.query.userid);
     const registeredCourse = await RegisteredCourse.findOne({
-      courseid: req.params.id
+      courseid: req.params.id,userid:req.query.userid
     })
+    console.log('registeredCourse',registeredCourse);
     registeredCourse.certificate=true
     registeredCourse.completionDate=new Date()
 
@@ -176,6 +202,28 @@ const updateRegisteredCourse = async (req, res) => {
     });
   }
 };
+const updateRegisteredCourseFail = async (req, res) => {
+  try {
+    console.log("req.params.id", req.params.id,req.query.userid);
+    const registeredCourse = await RegisteredCourse.findOne({
+      courseid: req.params.id,userid:req.query.userid
+    })
+    console.log('registeredCourseFail',registeredCourse);
+
+    registeredCourse.certificate=false
+    registeredCourse.completionDate=''
+
+    const updatedregisteredcourse=await registeredCourse.save()
+    await res.status(201).json({
+      updatedregisteredcourse
+    });
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
 
 
 
@@ -204,5 +252,7 @@ export {
   registeredcoursesDetails,
   userRegisteredcourseslogs,
   getallResgisteredCoursesofUser,
-  updateRegisteredCourse
+  updateRegisteredCourse,
+  updateRegisteredCourseFail,
+  registeredcoursesDetailsby_id
 };
