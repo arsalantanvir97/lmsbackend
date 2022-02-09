@@ -1,26 +1,32 @@
 import Lecture from "../models/LectureModel";
 
 const createLecture = async (req, res) => {
-  const { courseid, lecturecode, lecturetitle, videoduration } = req.body;
-  let ad_video =
-    req.files &&
-    req.files.ad_video &&
-    req.files.ad_video[0] &&
-    req.files.ad_video[0].path;
-    console.log('ad_video',ad_video)
-  const lecture = await Lecture.create({
-    courseid: JSON.parse(courseid),
-    lecturecode,
-    lecturetitle,
-    videoduration,
-    ad_video
-  });
-  if (lecture) {
-    console.log("lecture", lecture);
-    res.status(201).json({
-      lecture
+  try {
+    const { courseid, lecturecode, lecturetitle, videoduration } = req.body;
+    let ad_video =
+      req.files &&
+      req.files.ad_video &&
+      req.files.ad_video[0] &&
+      req.files.ad_video[0].path;
+      console.log('ad_video',ad_video)
+    const lecture = await Lecture.create({
+      courseid: JSON.parse(courseid),
+      lecturecode,
+      lecturetitle,
+      videoduration,
+      ad_video
     });
-  } else {
+    if (lecture) {
+      console.log("lecture", lecture);
+      res.status(201).json({
+        lecture
+      });
+  } 
+  
+ 
+  }
+  catch (error) {
+    console.log('error',error)
     res.status(400);
     throw new Error("Invalid lecture data");
   }
