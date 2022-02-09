@@ -12,8 +12,8 @@ import {
 } from "../controllers/lectureController";
 import { protect } from "../middlewares/authMiddleware";
 
-router.post("/createLecture", protect, createLecture);
-router.get("/lecturelogs", protect, lecturelogs);
+router.post("/createLecture",  createLecture);
+router.get("/lecturelogs",  lecturelogs);
 router.get("/lectureDetails/:id", protect, lectureDetails);
 router.post("/editLecture", protect, editLecture);
 router.get("/deleteLecture/:id", protect, deleteLecture);
