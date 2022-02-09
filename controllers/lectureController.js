@@ -7,6 +7,7 @@ const createLecture = async (req, res) => {
     req.files.ad_video &&
     req.files.ad_video[0] &&
     req.files.ad_video[0].path;
+    console.log('ad_video',ad_video)
   const lecture = await Lecture.create({
     courseid: JSON.parse(courseid),
     lecturecode,
