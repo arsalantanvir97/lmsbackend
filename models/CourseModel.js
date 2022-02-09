@@ -30,7 +30,11 @@ const CourseSchema = mongoose.Schema(
     },
     coursefeature: {
       type: String
-    }
+    },
+    studentcount:
+    {
+      type: Number,default:0
+    },
   },
   {
     timestamps: true

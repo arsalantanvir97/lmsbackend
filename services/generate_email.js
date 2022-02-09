@@ -1,5 +1,4 @@
 import nodemailer from 'nodemailer'
-
 var smtpConfiq = {
   service: "Gmail",
   auth: {
@@ -16,8 +15,13 @@ const  generateEmail= async (email, subject, html) => {
         from: 'arsalantanvir@yahoo.com',
         to: email,
         subject,
-        text: "hiiii",
+        text: "",
         html,
+        attachments: [{
+          filename: 'logo.png',
+          path: __dirname +`/logo.png`,
+          cid: 'logo1' //same cid value as in the html img src
+}]
       };
       const res = await transporter.sendMail(mailOptions);
       console.log(res);

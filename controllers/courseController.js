@@ -31,6 +31,9 @@ const createCourse = async (req, res) => {
     images: reciepts
   });
   if (course) {
+    const cat = await Category.findOne({ _id: JSON.parse(coursecategory) });
+    cat.coursecount=cat.coursecount+1
+    const updatedcat=cat.save()
     console.log("course", course);
     res.status(201).json({
       course

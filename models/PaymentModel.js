@@ -18,7 +18,7 @@ const PaymentSchema = mongoose.Schema(
     type: { type: String },
     cost: { type: Number },
     duration:{ type: Number },
-    expiryDate: {
+    expirydate: {
       type: Date
     },
   },

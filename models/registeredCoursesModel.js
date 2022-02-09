@@ -14,6 +14,9 @@ const RegisteredCourseSchema = mongoose.Schema(
     lecture: {
       type: Array
     },
+    enterpriseid: {
+      type: String
+    },
     expirydate: {
       type: Date
     },
@@ -25,11 +28,19 @@ const RegisteredCourseSchema = mongoose.Schema(
     },
     certificate: {
       type: Boolean,
-      default:false
+      default: false
+    },
+    expired: {
+      type: Boolean,
+      default: false
+    },
+    certificategenerated: {
+      type: Boolean,
+      default: false
     },
     completionDate: {
       type: Date
-    },
+    }
   },
   {
     timestamps: true

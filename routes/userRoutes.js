@@ -23,7 +23,8 @@ import {
   getEmployeeProfile,
   getEditEmployeeProfile,
   editEmployee,
-  getcount
+  getcount,
+  generateCertificate
 } from "../controllers/userController.js";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -53,6 +54,9 @@ router.get("/getlatestusers", protect, getLatestUsers);
 router.post("/verifyAndREsetPassword", protect, verifyAndREsetPassword);
 router.post("/enterpriseSubscription", enterpriseSubscription);
 router.post("/addingEmployee", addingEmployee);
+router.post("/generateCertificate",protect, generateCertificate);
+
+
 router.get("/getcount", getcount);
 
 

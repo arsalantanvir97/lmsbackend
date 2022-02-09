@@ -9,7 +9,11 @@ const CategorySchema = mongoose.Schema(
     status: {
       type: Boolean,
       default: true
-    }
+    },
+    coursecount:
+    {
+      type: Number,default:0
+    },
   },
   {
     timestamps: true

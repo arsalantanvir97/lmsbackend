@@ -192,10 +192,11 @@ const registerEmployee = async (req, res) => {
       userid: user._id,
       courseid: course.courseid._id,
       duration: course.duration,
+      enterpriseid: enterpriseid,
       cost: course.cost
     });
     console.log("registeredcourses", registeredcourses);
-    registeredcourses.expiryDate = moment(registeredcourses.createdAt).add(
+    registeredcourses.expirydate = moment(registeredcourses.createdAt).add(
       course.duration,
       "M"
     );
@@ -203,15 +204,16 @@ const registerEmployee = async (req, res) => {
     const payment = new Payment({
       courseid: course.courseid._id,
       userid: user._id,
-      duration:course.duration,
+      duration: course.duration,
       type: "Purchased Course",
       cost: Number(course.cost),
-      expirydate:registeredcourses.expiryDate
-
+      expirydate: registeredcourses.expirydate
     });
     console.log("payment", payment);
     const createdpayment = await payment.save();
-
+    const courseee=await Course.findOne({_id:course.courseid._id})
+    courseee.studentcount=courseee.studentcount+1
+    const updatedcourse=await courseee.save()
     const idempotency_key = uuidv4();
 
     await CREATE_VOX_USER(user.username, user.password, idempotency_key);
@@ -538,6 +540,7 @@ const getEditEmployeeProfile = async (req, res) => {
       User.findById(req.params.id),
       RegisteredCourse.find({
         userid: { $eq: req.query.enterpriseid }
+        
       }).populate({
         path: "courseid userid",
         populate: {
@@ -716,7 +719,7 @@ const addingEmployee = async (req, res) => {
 
   const html = `<p>You are receiving this because you have been added by an Enterprise named ${enterprisename} on LMS portal.
           \n\n If you want to register on LMS portal visit the link below.            
-          \n\n <br/> http://localhost:3000/LMS/user/EmployeeSignup/${id}/${courseid}
+          \n\n <br/> https://dev74.onlinetestingserver.com/LMS/user/EmployeeSignup/${id}/${courseid}
           </p>`;
   await generateEmail(email, "LMS - Enterprise Invitation", html);
   const notification = {
@@ -734,6 +737,118 @@ const addingEmployee = async (req, res) => {
     message: "Invitation Status Has Been Emailed To Given Email Address"
   });
 };
+
+const generateCertificate = async (req, res) => {
+  console.log("generateCertificate");
+  const { email, reg } = req.body;
+  console.log("req.body", req.body);
+  const html = `<body>
+
+  <table width="600" border="0" cellspacing="0" cellpadding="0" class="email-body" style="border:2px solid #b78b40">
+    <tbody>
+      
+      <tr>
+        <td width="80"></td>
+        <td align="center">
+          <table width="100%" border="0">
+    <tbody>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="center"><img src="cid:logo1" width="250"></td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+         <td align="center" style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 14px; color: #000;">Congratulations on Completing Course ${
+           reg.courseid.coursetitle
+         }</td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+        <td align="center" style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 40px; color: #b78b40; font-style: italic;">
+      <em>${reg.userid.username}</em>
+      </td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+    
+      
+      <tr>
+        <td align="center">
+        <table width="80%" border="0">
+    <tbody>
+      <tr>
+        <td align="center">
+        <table width="100%" border="0">
+  
+  </table>
+  
+      
+      </td>
+        <td width="40">&nbsp;</td>
+        <td><table width="100%" border="0">
+    <tbody>
+      
+      
+    
+    </tbody>
+  </table></td>
+      </tr>
+    </tbody>
+  </table>
+  
+      </td>
+      </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+      <tr>
+      <td align="center" style="font-family: Arial, 'Helvetica Neue', Helvetica, sans-serif; font-size: 14px; color: #000;">${
+        reg.userid.username
+      } you completed the course on ${moment
+    .utc(reg.completionDate)
+    .format("LL")}</td>
+   </tr>
+      <tr>
+        <td>&nbsp;</td>
+      </tr>
+    </tbody>
+  </table>
+  
+        </td>
+        <td width="80"></td>
+      </tr>
+      
+   </tbody>
+  </table>
+  
+  
+  
+  
+  </body>`;
+  await generateEmail(
+    reg.userid.email,
+    "LMS - Certificate of Completion of Course",
+    html
+  );
+  const registeredCurse = await RegisteredCourse.findOne({ _id: reg._id });
+  console.log('registeredCurse',registeredCurse)
+  registeredCurse.certificategenerated = true;
+  const updatedregisteredCurse = await registeredCurse.save();
+  return res.status(201).json({
+    message: "Certificate Has Been Emailed To Given Email Address"
+  });
+};
+
 // \n\n <br/> https://dev74.onlinetestingserver.com/LMS/user/EnterpriseSignup/${id}/${courseid}
 
 const enterpriseemployeelogs = async (req, res) => {
@@ -853,12 +968,13 @@ const editEmployee = async (req, res) => {
           coursetobeRegistered.map(async (coures) => {
             const registeredcourses = await new RegisteredCourse({
               userid: id,
+              enterpriseid,
               courseid: coures.value.courseid._id,
               duration: coures.value.duration,
               cost: coures.value.cost
             });
             console.log("registeredcourses", registeredcourses);
-            registeredcourses.expiryDate = moment(
+            registeredcourses.expirydate = moment(
               registeredcourses.createdAt
             ).add(coures.value.duration, "M");
             const createdregisteredcourses = await registeredcourses.save();
@@ -866,13 +982,15 @@ const editEmployee = async (req, res) => {
               courseid: coures.value.courseid._id,
               userid: id,
               type: "Purchased Course",
-              duration:coures.value.duration,
+              duration: coures.value.duration,
               cost: Number(coures.value.cost),
-              expirydate:registeredcourses.expiryDate
-
+              expirydate: registeredcourses.expirydate
             });
             console.log("payment", payment);
             const createdpayment = await payment.save();
+            const course=await Course.findOne({_id:course.coures.value.courseid._id})
+            course.studentcount=course.studentcount+1
+            const updatedcourse=await course.save()
           })
       );
     }
@@ -904,15 +1022,13 @@ const editEmployee = async (req, res) => {
     });
   }
 };
-const getcount= async (req, res) => {
+const getcount = async (req, res) => {
   try {
-    const [user, course] = await Promise.all([
-      User.count(),
-      Course.count(),
-    ]);
-   
+    const [user, course] = await Promise.all([User.count(), Course.count()]);
+
     await res.status(201).json({
-      user, course
+      user,
+      course
     });
   } catch (err) {
     res.status(500).json({
@@ -942,5 +1058,6 @@ export {
   getEmployeeProfile,
   getEditEmployeeProfile,
   editEmployee,
-  getcount
+  getcount,
+  generateCertificate
 };
