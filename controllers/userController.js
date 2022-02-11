@@ -94,6 +94,7 @@ const registerEnterprise = async (req, res) => {
     req.files.user_image &&
     req.files.user_image[0] &&
     req.files.user_image[0].path;
+    console.log('user_image',user_image)
   console.log("req.body", req.body);
   if (!comparePassword(password, confirmpassword))
     return res.status(401).json({ error: "Password does not match" });
