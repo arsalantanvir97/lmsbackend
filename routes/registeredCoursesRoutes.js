@@ -8,7 +8,8 @@ import {
   userRegisteredcourseslogs,
   getallResgisteredCoursesofUser,
   updateRegisteredCourse,
-  updateRegisteredCourseFail,registeredcoursesDetailsby_id,
+  // updateRegisteredCourseFail
+  registeredcoursesDetailsby_id,
   enterpriseRegisteredcourseslogsofemployee,
   userRegisteredcourseslogsforcertificate,
   reregisterCourse,
@@ -27,7 +28,7 @@ router.post("/getallResgisteredCoursesofUser", protect, getallResgisteredCourses
 router.post("/getallResgisteredCoursesofUserNotExpired", protect, getallResgisteredCoursesofUserNotExpired);
 
 router.get("/updateRegisteredCourse/:id", protect, updateRegisteredCourse);
-router.get("/updateRegisteredCourseFail/:id", protect, updateRegisteredCourseFail);
+// router.get("/updateRegisteredCourseFail/:id", protect, updateRegisteredCourseFail);
 router.get("/registeredcoursesDetailsby_id/:id", protect, registeredcoursesDetailsby_id);
 router.get("/enterpriseRegisteredcourseslogsofemployee/:id", protect, enterpriseRegisteredcourseslogsofemployee);
 

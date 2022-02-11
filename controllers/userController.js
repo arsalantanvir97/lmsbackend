@@ -88,6 +88,7 @@ const registerUser = async (req, res) => {
 };
 const registerEnterprise = async (req, res) => {
   const { username, confirmpassword, email, password, type } = req.body;
+  console.log('registerEnterprise',req.body)
   let user_image =
     req.files &&
     req.files.user_image &&
@@ -679,6 +680,7 @@ const enterpriseSubscription = async (req, res) => {
     console.log("user", user);
     user.subscriptiondetails = subscriptiondetails;
     user.enterprisesubscribed = true;
+    user.subscribed=true
 
     await user.save();
 

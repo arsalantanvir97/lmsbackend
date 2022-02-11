@@ -316,27 +316,27 @@ const updateRegisteredCourse = async (req, res) => {
     });
   }
 };
-const updateRegisteredCourseFail = async (req, res) => {
-  try {
-    console.log("req.params.id", req.params.id,req.query.userid);
-    const registeredCourse = await RegisteredCourse.findOne({
-      courseid: req.params.id,userid:req.query.userid
-    })
-    console.log('registeredCourseFail',registeredCourse);
+// const updateRegisteredCourseFail = async (req, res) => {
+//   try {
+//     console.log("req.params.id", req.params.id,req.query.userid);
+//     const registeredCourse = await RegisteredCourse.findOne({
+//       courseid: req.params.id,userid:req.query.userid
+//     })
+//     console.log('registeredCourseFail',registeredCourse);
 
-    registeredCourse.certificate=false
-    registeredCourse.completionDate=''
+//     registeredCourse.certificate=false
+//     registeredCourse.completionDate=''
 
-    const updatedregisteredcourse=await registeredCourse.save()
-    await res.status(201).json({
-      updatedregisteredcourse
-    });
-  } catch (err) {
-    res.status(500).json({
-      message: err.toString()
-    });
-  }
-};
+//     const updatedregisteredcourse=await registeredCourse.save()
+//     await res.status(201).json({
+//       updatedregisteredcourse
+//     });
+//   } catch (err) {
+//     res.status(500).json({
+//       message: err.toString()
+//     });
+//   }
+// };
 
 
 
@@ -425,7 +425,7 @@ export {
   userRegisteredcourseslogs,
   getallResgisteredCoursesofUser,
   updateRegisteredCourse,
-  updateRegisteredCourseFail,
+  // updateRegisteredCourseFail,
   registeredcoursesDetailsby_id,
   enterpriseRegisteredcourseslogsofemployee,
   userRegisteredcourseslogsforcertificate,
