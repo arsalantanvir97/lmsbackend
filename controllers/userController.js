@@ -109,7 +109,7 @@ console.log('block12')
   }
   console.log('block13')
 
-  const user = await User.create({
+  const user = await new User({
     username,
     password,
     email,
