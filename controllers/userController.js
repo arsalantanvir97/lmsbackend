@@ -98,12 +98,15 @@ const registerEnterprise = async (req, res) => {
   if (!comparePassword(password, confirmpassword))
     return res.status(401).json({ error: "Password does not match" });
   const UserExists = await User.findOne({ email });
-
+console.log('block12')
   if (UserExists) {
+    console.log('block14')
+
     return res.status(401).json({
       error: "User already exist"
     });
   }
+  console.log('block13')
 
   const user = await User.create({
     username,
@@ -114,9 +117,15 @@ const registerEnterprise = async (req, res) => {
   });
   console.log("user", user);
   if (user) {
-    const idempotency_key = uuidv4();
+    console.log('block15')
 
+    const idempotency_key = uuidv4();
+    console.log('block16')
+
+  
     await CREATE_VOX_USER(user.username, user.password, idempotency_key);
+    console.log('block17')
+
     user.voxusername = idempotency_key;
     user.mrno = user._id;
     const notification = {
@@ -129,8 +138,14 @@ const registerEnterprise = async (req, res) => {
         id: user._id
       }
     };
+    console.log('block18')
+
     CreateNotification(notification);
+    console.log('block19')
+
     await user.save();
+    console.log('block20')
+
     await res.status(201).json({
       _id: user._id,
       username: user.username,
