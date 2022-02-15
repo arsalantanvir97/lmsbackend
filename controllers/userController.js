@@ -19,6 +19,8 @@ import { v4 as uuidv4 } from "uuid";
 import RegisteredCourse from "../models/registeredCoursesModel.js";
 import Payment from "../models/PaymentModel.js";
 import Subscription from "../models/SubscriptionModel";
+import Cerftification from "../models/CerftificationModel";
+
 
 import Course from "../models/CourseModel.js";
 import Mongoose from "mongoose";
@@ -862,6 +864,13 @@ const generateCertificate = async (req, res) => {
   console.log('registeredCurse',registeredCurse)
   registeredCurse.certificategenerated = true;
   const updatedregisteredCurse = await registeredCurse.save();
+    const cerftification = await new Cerftification({
+      userid:registeredCurse.userid,
+      courseid:registeredCurse.courseid,
+    });
+    console.log("cerftification", cerftification);
+
+    const createdcerftification = await cerftification.save();
   return res.status(201).json({
     message: "Certificate Has Been Emailed To Given Email Address"
   });

@@ -51,6 +51,8 @@ const quizlogs = async (req, res) => {
         }
       : {};
     const status_filter = req.query.status ? { status: req.query.status } : {};
+    const courseid_filter = req.query.courseidfilter ? { courseid:Mongoose.mongo.ObjectId(req.query.courseidfilter) } : {};
+    const lectureid_filter = req.query.lectureidfilter ? { lectureid:Mongoose.mongo.ObjectId(req.query.lectureidfilter) } : {};
 
     const from = req.query.from;
     const to = req.query.to;
@@ -64,7 +66,7 @@ const quizlogs = async (req, res) => {
       };
 
     const quiz = await Quiz.paginate(
-      { ...searchParam, ...status_filter, ...dateFilter },
+      {...lectureid_filter,...courseid_filter, ...searchParam, ...status_filter, ...dateFilter },
       {
         page: req.query.page,
         limit: req.query.perPage,

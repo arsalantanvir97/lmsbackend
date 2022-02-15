@@ -11,7 +11,8 @@ import {
   groupedCourses,
   categoryfiltergroupedCourses,
   courseByCategory,
-  filterCoursebyText
+  filterCoursebyText,
+  allCoursesandCategories
 } from "../controllers/courseController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -25,6 +26,8 @@ router.get("/groupedCourses",  groupedCourses);
 router.get("/categoryfiltergroupedCourses/:id", categoryfiltergroupedCourses);
 router.get("/courseByCategory/:id",  courseByCategory);
 router.post("/filterCoursebyText",  filterCoursebyText);
+router.get("/allCoursesandCategories", protect, allCoursesandCategories);
+
 
 
 export default router;

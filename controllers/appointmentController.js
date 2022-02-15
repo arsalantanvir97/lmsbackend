@@ -35,7 +35,7 @@ const createAppointment = async (req, res) => {
       userid,
       type: "Appointment Booked",
       cost: Number(cost),
-      appointmentid:appointment._id
+      appointmentid: appointment._id
     });
     console.log("payment", payment);
     const createdpayment = await payment.save();
@@ -64,6 +64,9 @@ const appointmentlogs = async (req, res) => {
         }
       : {};
     const status_filter = req.query.status ? { status: req.query.status } : {};
+    const courseid_filter = req.query.courseidfilter
+      ? { courseid: Mongoose.mongo.ObjectId(req.query.courseidfilter) }
+      : {};
 
     const from = req.query.from;
     const to = req.query.to;
@@ -77,7 +80,7 @@ const appointmentlogs = async (req, res) => {
       };
 
     const appointment = await Appointment.paginate(
-      { ...searchParam, ...status_filter, ...dateFilter },
+      { ...courseid_filter, ...searchParam, ...status_filter, ...dateFilter },
       {
         page: req.query.page,
         limit: req.query.perPage,
@@ -122,29 +125,29 @@ const deleteAppointment = async (req, res) => {
   }
 };
 const updatestatus = async (req, res) => {
-  const { status, id,adminid } = req.body;
+  const { status, id, adminid } = req.body;
   console.log("updatestatusreq.body", req.body);
   try {
     const appointment = await Appointment.findOne({ _id: id });
     console.log("appointment", appointment);
 
     appointment.status = status;
-if(status=='Accepted'){
-  if(appointment.type=='chat'){
-  await MakeFriends(adminid, appointment.userid)
-  }
-  const notification = {
-    notifiableId: null,
-    notificationType: "User",
-    title: `Appointment Created`,
-    body: `Admin has requested appointment reschedule. Please reselect time.`,
-    payload: {
-      type: "USER",
-      id: id
+    if (status == "Accepted") {
+      if (appointment.type == "chat") {
+        await MakeFriends(adminid, appointment.userid);
+      }
+      const notification = {
+        notifiableId: null,
+        notificationType: "User",
+        title: `Appointment Created`,
+        body: `Admin has requested appointment reschedule. Please reselect time.`,
+        payload: {
+          type: "USER",
+          id: id
+        }
+      };
+      CreateNotification(notification);
     }
-  };
-  CreateNotification(notification);
-}
     await appointment.save();
     await res.status(201).json({
       message: "Appointment Status Updated Successfully"

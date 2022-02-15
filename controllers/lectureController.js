@@ -1,4 +1,5 @@
 import Lecture from "../models/LectureModel";
+import Mongoose from "mongoose";
 
 const createLecture = async (req, res) => {
   try {
@@ -43,6 +44,7 @@ const lecturelogs = async (req, res) => {
         }
       : {};
     const status_filter = req.query.status ? { status: req.query.status } : {};
+    const courseid_filter = req.query.courseidfilter ? { courseid:Mongoose.mongo.ObjectId(req.query.courseidfilter) } : {};
 
     const from = req.query.from;
     const to = req.query.to;
@@ -56,13 +58,18 @@ const lecturelogs = async (req, res) => {
       };
 
     const lecture = await Lecture.paginate(
-      { ...searchParam, ...status_filter, ...dateFilter },
+      {...courseid_filter, ...searchParam, ...status_filter, ...dateFilter },
       {
         page: req.query.page,
         limit: req.query.perPage,
         lean: true,
         sort: "-_id",
-        populate: "courseid courseid.coursecategory"
+        populate: {
+          path: "courseid",
+          populate: {
+            path: "coursecategory"
+          }
+        }
       }
     );
     await res.status(200).json({

@@ -1,6 +1,7 @@
 import Category from "../models/CategoryModel";
 import Course from "../models/CourseModel";
 import Mongoose from "mongoose";
+import Lecture from "../models/LectureModel";
 
 const createCourse = async (req, res) => {
   const {
@@ -56,6 +57,8 @@ const courselogs = async (req, res) => {
         }
       : {};
     const status_filter = req.query.status ? { status: req.query.status } : {};
+    const courseid_filter = req.query.courseidfilter ? { _id:Mongoose.mongo.ObjectId(req.query.courseidfilter) } : {};
+    const categoryid_filter = req.query.categoryidfilter ? { coursecategory:Mongoose.mongo.ObjectId(req.query.categoryidfilter) } : {};
 
     const from = req.query.from;
     const to = req.query.to;
@@ -69,7 +72,9 @@ const courselogs = async (req, res) => {
       };
 
     const course = await Course.paginate(
-      { ...searchParam, ...status_filter, ...dateFilter },
+      {...courseid_filter,
+        ...categoryid_filter,
+         ...searchParam, ...status_filter, ...dateFilter },
       {
         page: req.query.page,
         limit: req.query.perPage,
@@ -183,6 +188,22 @@ const allCourses = async (req, res) => {
         allCourses
       });
     }
+  } catch (err) {
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+const allCoursesandCategories = async (req, res) => {
+  try {
+    const allCourses = await Course.find();
+    const allLectures = await Lecture.find();
+    const allCategories = await Category.find();
+
+      console.log("allCourses", allCourses);
+      res.status(201).json({
+        allCourses,allLectures,allCategories
+      });
   } catch (err) {
     res.status(500).json({
       message: err.toString()
@@ -323,5 +344,6 @@ export {
   allCourses,
   groupedCourses,
   categoryfiltergroupedCourses,
-  filterCoursebyText
+  filterCoursebyText,
+  allCoursesandCategories
 };
