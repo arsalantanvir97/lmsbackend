@@ -1,5 +1,7 @@
 import Appointment from "../models/AppointementModel";
 import Payment from "../models/PaymentModel";
+import Notification from "../models/NotificationModel";
+
 import Mongoose from "mongoose";
 import moment from "moment";
 import CreateNotification from "../utills/notification.js";
@@ -41,6 +43,17 @@ const createAppointment = async (req, res) => {
     const createdpayment = await payment.save();
 
     if (createdappointment) {
+      const notification = {
+        notifiableId: null,
+        notificationType: "Admin",
+        title: `Appointment Rrquest`,
+        body: `A user have requested for an appointment type of ${type} with you on ${appointmentdate} ${appointmenttime}`,
+        payload: {
+          type: "USER",
+          id: userid
+        }
+      };
+      CreateNotification(notification);
       res.status(201).json({
         createdappointment
       });
@@ -125,21 +138,25 @@ const deleteAppointment = async (req, res) => {
   }
 };
 const updatestatus = async (req, res) => {
-  const { status, id, adminid } = req.body;
+  const { appointmentid,status, id, adminid } = req.body;
   console.log("updatestatusreq.body", req.body);
   try {
-    const appointment = await Appointment.findOne({ _id: id });
+    const appointment = await Appointment.findOne({ _id: appointmentid });
     console.log("appointment", appointment);
 
     appointment.status = status;
+
     if (status == "Accepted") {
       if (appointment.type == "chat") {
         await MakeFriends(adminid, appointment.userid);
       }
+    
+    }
+    if(status=="Reschedule Request"){
       const notification = {
-        notifiableId: null,
+        notifiableId: appointmentid,
         notificationType: "User",
-        title: `Appointment Created`,
+        title: `Appointment Reschedule`,
         body: `Admin has requested appointment reschedule. Please reselect time.`,
         payload: {
           type: "USER",
@@ -149,15 +166,46 @@ const updatestatus = async (req, res) => {
       CreateNotification(notification);
     }
     await appointment.save();
+    
     await res.status(201).json({
       message: "Appointment Status Updated Successfully"
     });
   } catch (err) {
+    console.log('err',err)
     res.status(500).json({
       message: err.toString()
     });
   }
 };
+
+const updatetime = async (req, res) => {
+  const { notificationid,
+    time,
+    appointmentid ,} = req.body;
+  console.log("updatestatusreq.body", req.body);
+  try {
+    const appointment = await Appointment.findOne({ _id: appointmentid });
+    console.log("appointment", appointment);
+
+    appointment.appointmenttime = time;
+    appointment.status='Pending'
+  
+    await appointment.save();
+    await Notification.findByIdAndRemove(notificationid);
+
+
+    await res.status(201).json({
+      message: "Appointment Time Updated Successfully"
+    });
+  } catch (err) {
+    console.log('err',err)
+    res.status(500).json({
+      message: err.toString()
+    });
+  }
+};
+
+
 
 const userAppointmentlogs = async (req, res) => {
   try {
@@ -238,5 +286,6 @@ export {
   appointmentDetails,
   deleteAppointment,
   updatestatus,
-  userAppointmentlogs
+  userAppointmentlogs,
+  updatetime
 };

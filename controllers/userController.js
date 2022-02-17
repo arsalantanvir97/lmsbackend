@@ -239,7 +239,7 @@ const registerEmployee = async (req, res) => {
     user.voxusername = idempotency_key;
     user.mrno = user._id;
     const notification = {
-      notifiableId: null,
+      notifiableId: enterpriseid,
       notificationType: "Enterprise",
       title: `Employee Registered`,
       body: `A user named ${username} has registered on our portal which you added as employee`,

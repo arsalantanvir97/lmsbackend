@@ -137,16 +137,22 @@ const editCourse = async (req, res) => {
       coursecategory,
       courseduration,
       coursedescription,
-      coursefeature
+      coursefeature,
+      images
     } = req.body;
     let _reciepts = [];
     const reciepts = [];
+    console.log('images111',images,typeof(images))
+    let imagge=JSON.parse(images)
+    console.log('imageeeeeess',imagge)
     _reciepts = req.files.reciepts;
     console.log("req.bopdy", req.body);
     console.log("block1");
     _reciepts && _reciepts.forEach((img) => reciepts.push(img.path));
-
-    console.log("block2");
+    console.log('receiptsss',_reciepts)
+    imagge && imagge.map(imgg=>{console.log('imgg',imgg)
+       reciepts.push(imgg)})
+    console.log("block2",reciepts);
 
     const course = await Course.findOne({ _id: id });
     course.coursecode = coursecode ? coursecode : course.coursecode;

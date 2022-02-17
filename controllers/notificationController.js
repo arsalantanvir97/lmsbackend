@@ -1,9 +1,10 @@
+import Booking from "../models/BookingModel.js";
 import Notification from "../models/NotificationModel.js";
 
 const getallNotification = async (req, res) => {
   // console.log('getallNotification')
     try {
-      const notification = await Notification.find();
+      const notification = await Notification.find({notificationType:'Admin'});
       // console.log('notification',notification)
       await res.status(201).json({
         notification,
@@ -14,6 +15,60 @@ const getallNotification = async (req, res) => {
       });
     }
   };
+
+  const notificationDetails = async (req, res) => {
+    try {
+      console.log("req.params.id", req.params.id);
+      const notification = await Notification.findById(req.params.id)
+      const booking = await Booking.findOne();
+
+      await res.status(201).json({
+        notification,
+        booking
+      });
+    } catch (err) {
+      res.status(500).json({
+        message: err.toString()
+      });
+    }
+  };
+
+  const usernotifications = async (req, res) => {
+    console.log('req.params.id',req.params.id)
+    // console.log('getallNotification')
+      try {
+        const notification = await Notification.find({notificationType:'User','payload.id':req.params.id});
+        // console.log('notification',notification)
+
+        await res.status(201).json({
+          notification
+
+        });
+      } catch (err) {
+        res.status(500).json({
+          message: err.toString(),
+        });
+      }
+    };
+    const enterprisenotifications = async (req, res) => {
+      console.log('req.params.id',req.params.id)
+      // console.log('getallNotification')
+        try {
+          const notification = await Notification.find({notificationType:'Enterprise',notifiableId:req.params.id});
+          // console.log('notification',notification)
+  
+          await res.status(201).json({
+            notification
+  
+          });
+        } catch (err) {
+          res.status(500).json({
+            message: err.toString(),
+          });
+        }
+      };
+    
+  
   const getAllNotificationlogs = async (req, res) => {
     try {
       console.log(
@@ -59,4 +114,4 @@ const getallNotification = async (req, res) => {
       });
     }
   };
-  export{getallNotification,getAllNotificationlogs}
+  export{notificationDetails,getallNotification,getAllNotificationlogs,usernotifications,enterprisenotifications}
