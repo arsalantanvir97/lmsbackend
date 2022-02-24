@@ -4,7 +4,8 @@ const router = express.Router();
 import {
     getallNotification,getAllNotificationlogs,
     usernotifications,notificationDetails,
-    enterprisenotifications
+    enterprisenotifications,
+    adminnotification
 } from "../controllers/notificationController";
 import { protect } from "../middlewares/authMiddleware";
 
@@ -13,6 +14,7 @@ router.get("/usernotifications/:id",protect,usernotifications);
 router.get("/enterprisenotifications/:id",protect,enterprisenotifications);
 
 router.get("/notificationDetails/:id", protect, notificationDetails);
+router.get("/adminnotification", protect, adminnotification);
 
 router.get("/notificationlogs",protect,getAllNotificationlogs);
 

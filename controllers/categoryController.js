@@ -4,17 +4,24 @@ const createCategory = async (req, res) => {
   const { name } = req.body;
   console.log("req.body", req.body);
   try {
-    const category = new Category({
-      name
-    });
-    console.log("category", category);
-
-    const createdcategory = await category.save();
-    console.log("createdcategory", createdcategory);
-    if (createdcategory) {
-      res.status(201).json({
-        createdcategory
+    const categoryalreadyexist = await Category.findOne({ name: name });
+    if (categoryalreadyexist) {
+       res.status(409).json({
+        message: "Category already exist"
       });
+    } else {
+      const category = new Category({
+        name
+      });
+      console.log("category", category);
+
+      const createdcategory = await category.save();
+      console.log("createdcategory", createdcategory);
+      if (createdcategory) {
+        res.status(201).json({
+          createdcategory
+        });
+      }
     }
   } catch (err) {
     res.status(500).json({

@@ -46,7 +46,7 @@ const createAppointment = async (req, res) => {
       const notification = {
         notifiableId: null,
         notificationType: "Admin",
-        title: `Appointment Rrquest`,
+        title: `Appointment Request`,
         body: `A user have requested for an appointment type of ${type} with you on ${appointmentdate} ${appointmenttime}`,
         payload: {
           type: "USER",

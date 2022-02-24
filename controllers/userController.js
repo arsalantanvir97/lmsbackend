@@ -57,17 +57,17 @@ const registerUser = async (req, res) => {
     await CREATE_VOX_USER(user.username, user.password, idempotency_key);
     user.voxusername = idempotency_key;
     user.mrno = user._id;
-    const notification = {
-      notifiableId: null,
-      notificationType: "User",
-      title: `${type} Created`,
-      body: `A ${type} name ${username} has registered`,
-      payload: {
-        type: "USER",
-        id: user._id
-      }
-    };
-    CreateNotification(notification);
+    // const notification = {
+    //   notifiableId: null,
+    //   notificationType: "User",
+    //   title: `${type} Created`,
+    //   body: `A ${type} name ${username} has registered`,
+    //   payload: {
+    //     type: "USER",
+    //     id: user._id
+    //   }
+    // };
+    // CreateNotification(notification);
     await user.save();
     await res.status(201).json({
       _id: user._id,
@@ -303,7 +303,7 @@ const recoverPassword = async (req, res) => {
   console.log("recoverPassword");
   const { email, type } = req.body;
   console.log("req.body", req.body);
-  const user = await User.findOne({ email, type });
+  const user = await User.findOne({ email });
   if (!user) {
     console.log("!user");
     return res.status(401).json({

@@ -67,7 +67,23 @@ const getallNotification = async (req, res) => {
           });
         }
       };
+      const adminnotification = async (req, res) => {
+        // console.log('getallNotification')
+          try {
+            const notification = await Notification.find({notificationType:'Admin'});
+            // console.log('notification',notification)
     
+            await res.status(201).json({
+              notification
+    
+            });
+          } catch (err) {
+            res.status(500).json({
+              message: err.toString(),
+            });
+          }
+        };
+      
   
   const getAllNotificationlogs = async (req, res) => {
     try {
@@ -114,4 +130,4 @@ const getallNotification = async (req, res) => {
       });
     }
   };
-  export{notificationDetails,getallNotification,getAllNotificationlogs,usernotifications,enterprisenotifications}
+  export{notificationDetails,getallNotification,getAllNotificationlogs,usernotifications,enterprisenotifications,adminnotification}
