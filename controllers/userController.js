@@ -739,7 +739,7 @@ const addingEmployee = async (req, res) => {
 
   const html = `<p>You are receiving this because you have been added by an Enterprise named ${enterprisename} on LMS portal.
           \n\n If you want to register on LMS portal visit the link below.            
-          \n\n <br/> https://dev74.onlinetestingserver.com/LMS/user/EmployeeSignup/${id}/${courseid}
+          \n\n <br/> https://wrightcoacademy.com/user/EmployeeSignup/${id}/${courseid}
           </p>`;
   await generateEmail(email, "LMS - Enterprise Invitation", html);
   const notification = {
