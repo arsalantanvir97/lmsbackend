@@ -14,8 +14,8 @@ const createQuiz = async (req, res) => {
   console.log("req.body", req.body);
   try {
     const quiz = new Quiz({
-      courseid: JSON.parse(courseid),
-      lectureid: JSON.parse(lectureid),
+      courseid: courseid,
+      lectureid: lectureid,
       quizinfo,
       passingmarks,
       totalmarks,
@@ -33,6 +33,7 @@ const createQuiz = async (req, res) => {
       });
     }
   } catch (err) {
+    console.log('err',err)
     res.status(500).json({
       message: err.toString()
     });
