@@ -40,7 +40,7 @@ const registerAdmin = async (req, res) => {
   });
 
   if (admin) {
-    await CREATE_VOX_USER(admin.fullName, user.password,admin._id);
+    await CREATE_VOX_USER(admin.fullName, admin.password,admin._id);
 
     res.status(201).json({
       _id: admin._id,
