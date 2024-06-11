@@ -1,11 +1,10 @@
-import Appointment from "../models/AppointementModel";
-import Payment from "../models/PaymentModel";
-import Notification from "../models/NotificationModel";
+import Appointment from "../models/AppointementModel"
+import Payment from "../models/PaymentModel"
+import Notification from "../models/NotificationModel"
 
-import Mongoose from "mongoose";
-import moment from "moment";
-import CreateNotification from "../utills/notification.js";
-import { MakeFriends } from "../services/SoaChat";
+import Mongoose from "mongoose"
+import moment from "moment"
+import CreateNotification from "../utills/notification.js"
 
 const createAppointment = async (req, res) => {
   const {
@@ -15,9 +14,9 @@ const createAppointment = async (req, res) => {
     type,
     appointmentdate,
     appointmenttime,
-    description
-  } = req.body;
-  console.log("req.body", req.body);
+    description,
+  } = req.body
+  console.log("req.body", req.body)
   try {
     const appointment = new Appointment({
       userid,
@@ -26,21 +25,21 @@ const createAppointment = async (req, res) => {
       cost,
       appointmentdate,
       appointmenttime,
-      description
-    });
-    console.log("appointment", appointment);
+      description,
+    })
+    console.log("appointment", appointment)
 
-    const createdappointment = await appointment.save();
-    console.log("createdappointment", createdappointment);
+    const createdappointment = await appointment.save()
+    console.log("createdappointment", createdappointment)
     const payment = new Payment({
       courseid,
       userid,
       type: "Appointment Booked",
       cost: Number(cost),
-      appointmentid: appointment._id
-    });
-    console.log("payment", payment);
-    const createdpayment = await payment.save();
+      appointmentid: appointment._id,
+    })
+    console.log("payment", payment)
+    const createdpayment = await payment.save()
 
     if (createdappointment) {
       const notification = {
@@ -50,47 +49,47 @@ const createAppointment = async (req, res) => {
         body: `A user have requested for an appointment type of ${type} with you on ${appointmentdate} ${appointmenttime}`,
         payload: {
           type: "USER",
-          id: userid
-        }
-      };
-      CreateNotification(notification);
+          id: userid,
+        },
+      }
+      CreateNotification(notification)
       res.status(201).json({
-        createdappointment
-      });
+        createdappointment,
+      })
     }
   } catch (err) {
-    console.log("err", err);
+    console.log("err", err)
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
+}
 const appointmentlogs = async (req, res) => {
   try {
     const searchParam = req.query.searchString
       ? {
           $or: [
             {
-              name: { $regex: `${req.query.searchString}`, $options: "i" }
-            }
-          ]
+              name: { $regex: `${req.query.searchString}`, $options: "i" },
+            },
+          ],
         }
-      : {};
-    const status_filter = req.query.status ? { status: req.query.status } : {};
+      : {}
+    const status_filter = req.query.status ? { status: req.query.status } : {}
     const courseid_filter = req.query.courseidfilter
       ? { courseid: Mongoose.mongo.ObjectId(req.query.courseidfilter) }
-      : {};
+      : {}
 
-    const from = req.query.from;
-    const to = req.query.to;
-    let dateFilter = {};
+    const from = req.query.from
+    const to = req.query.to
+    let dateFilter = {}
     if (from && to)
       dateFilter = {
         createdAt: {
           $gte: moment.utc(new Date(from)).startOf("day"),
-          $lte: moment.utc(new Date(to)).endOf("day")
-        }
-      };
+          $lte: moment.utc(new Date(to)).endOf("day"),
+        },
+      }
 
     const appointment = await Appointment.paginate(
       { ...courseid_filter, ...searchParam, ...status_filter, ...dateFilter },
@@ -99,60 +98,56 @@ const appointmentlogs = async (req, res) => {
         limit: req.query.perPage,
         lean: true,
         sort: "-_id",
-        populate: "userid courseid"
+        populate: "userid courseid",
       }
-    );
+    )
     await res.status(200).json({
-      appointment
-    });
+      appointment,
+    })
   } catch (err) {
-    console.log(err);
+    console.log(err)
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
+}
 const appointmentDetails = async (req, res) => {
   try {
-    console.log("req.params.id", req.params.id);
+    console.log("req.params.id", req.params.id)
     const appointment = await Appointment.findById(req.params.id).populate(
       "userid courseid"
-    );
+    )
     await res.status(201).json({
-      appointment
-    });
+      appointment,
+    })
   } catch (err) {
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
+}
 const deleteAppointment = async (req, res) => {
   try {
-    await Appointment.findByIdAndRemove(req.params.id);
-    return res.status(201).json({ message: "Appointment Deleted" });
+    await Appointment.findByIdAndRemove(req.params.id)
+    return res.status(201).json({ message: "Appointment Deleted" })
   } catch (err) {
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
+}
 const updatestatus = async (req, res) => {
-  const { appointmentid,status, id, adminid } = req.body;
-  console.log("updatestatusreq.body", req.body);
+  const { appointmentid, status, id, adminid } = req.body
+  console.log("updatestatusreq.body", req.body)
   try {
-    const appointment = await Appointment.findOne({ _id: appointmentid });
-    console.log("appointment", appointment);
+    const appointment = await Appointment.findOne({ _id: appointmentid })
+    console.log("appointment", appointment)
 
-    appointment.status = status;
+    appointment.status = status
 
     if (status == "Accepted") {
-      if (appointment.type == "chat") {
-        await MakeFriends(adminid, appointment.userid);
-      }
-    
     }
-    if(status=="Reschedule Request"){
+    if (status == "Reschedule Request") {
       const notification = {
         notifiableId: appointmentid,
         notificationType: "User",
@@ -160,52 +155,47 @@ const updatestatus = async (req, res) => {
         body: `Admin has requested appointment reschedule. Please reselect time.`,
         payload: {
           type: "USER",
-          id: id
-        }
-      };
-      CreateNotification(notification);
+          id: id,
+        },
+      }
+      CreateNotification(notification)
     }
-    await appointment.save();
-    
+    await appointment.save()
+
     await res.status(201).json({
-      message: "Appointment Status Updated Successfully"
-    });
+      message: "Appointment Status Updated Successfully",
+    })
   } catch (err) {
-    console.log('err',err)
+    console.log("err", err)
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
+}
 
 const updatetime = async (req, res) => {
-  const { notificationid,
-    time,
-    appointmentid ,} = req.body;
-  console.log("updatestatusreq.body", req.body);
+  const { notificationid, time, appointmentid } = req.body
+  console.log("updatestatusreq.body", req.body)
   try {
-    const appointment = await Appointment.findOne({ _id: appointmentid });
-    console.log("appointment", appointment);
+    const appointment = await Appointment.findOne({ _id: appointmentid })
+    console.log("appointment", appointment)
 
-    appointment.appointmenttime = time;
-    appointment.status='Pending'
-  
-    await appointment.save();
-    await Notification.findByIdAndRemove(notificationid);
+    appointment.appointmenttime = time
+    appointment.status = "Pending"
 
+    await appointment.save()
+    await Notification.findByIdAndRemove(notificationid)
 
     await res.status(201).json({
-      message: "Appointment Time Updated Successfully"
-    });
+      message: "Appointment Time Updated Successfully",
+    })
   } catch (err) {
-    console.log('err',err)
+    console.log("err", err)
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
-
-
+}
 
 const userAppointmentlogs = async (req, res) => {
   try {
@@ -213,49 +203,49 @@ const userAppointmentlogs = async (req, res) => {
       ? {
           $or: [
             {
-              name: { $regex: `${req.query.searchString}`, $options: "i" }
-            }
-          ]
+              name: { $regex: `${req.query.searchString}`, $options: "i" },
+            },
+          ],
         }
-      : {};
-    const status_filter = req.query.status ? { status: req.query.status } : {};
+      : {}
+    const status_filter = req.query.status ? { status: req.query.status } : {}
 
-    const from = req.query.from;
-    const to = req.query.to;
-    let dateFilter = {};
+    const from = req.query.from
+    const to = req.query.to
+    let dateFilter = {}
     if (from && to)
       dateFilter = {
         createdAt: {
           $gte: moment.utc(new Date(from)).startOf("day"),
-          $lte: moment.utc(new Date(to)).endOf("day")
-        }
-      };
+          $lte: moment.utc(new Date(to)).endOf("day"),
+        },
+      }
 
     const appointment = await Appointment.paginate(
       {
         userid: Mongoose.mongo.ObjectId(req.query.userid),
         ...searchParam,
         ...status_filter,
-        ...dateFilter
+        ...dateFilter,
       },
       {
         page: req.query.page,
         limit: req.query.perPage,
         lean: true,
         sort: "-_id",
-        populate: "userid courseid"
+        populate: "userid courseid",
       }
-    );
+    )
     await res.status(200).json({
-      appointment
-    });
+      appointment,
+    })
   } catch (err) {
-    console.log(err);
+    console.log(err)
     res.status(500).json({
-      message: err.toString()
-    });
+      message: err.toString(),
+    })
   }
-};
+}
 
 // const editBooking = async (req, res) => {
 //   const { id, time, saturdayoff, sundayoff } = req.body;
@@ -287,5 +277,5 @@ export {
   deleteAppointment,
   updatestatus,
   userAppointmentlogs,
-  updatetime
-};
+  updatetime,
+}
